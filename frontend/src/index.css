@@ -1,0 +1,1211 @@
+/* =========================================
+   BEAUTYBAR GLOBAL STYLES
+   Shared styling used throughout the app.
+   ========================================= */
+
+
+/* ---------- Basic Reset ---------- */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  background-color: #fffaf8;
+  color: #2f2929;
+}
+
+a {
+  color: #8a4f5d;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+
+/* ---------- Main Page Layout ---------- */
+
+.page-container {
+  width: min(1100px, 92%);
+  margin: 0 auto;
+  padding: 40px 0 80px;
+}
+
+
+/* ---------- Headings ---------- */
+
+h1 {
+  margin-top: 0;
+  font-size: 2.3rem;
+  color: #3a2d30;
+}
+
+h2 {
+  margin-top: 32px;
+  color: #573d43;
+}
+
+h3 {
+  color: #6e4a54;
+}
+
+
+/* ---------- Navigation ---------- */
+
+nav {
+  background-color: #ffffff;
+
+  padding: 18px 5%;
+
+  border-bottom: 1px solid #eadcdf;
+
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.04);
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  flex-wrap: wrap;
+}
+
+nav a {
+  font-weight: 600;
+}
+
+nav a:first-child {
+  font-size: 1.4rem;
+  color: #733f4d;
+}
+
+
+/* ---------- Forms ---------- */
+
+form {
+  max-width: 600px;
+
+  background-color: white;
+
+  padding: 28px;
+
+  margin: 24px 0;
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 4px 18px rgba(0, 0, 0, 0.07);
+}
+
+form div {
+  margin-bottom: 18px;
+}
+
+label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  font-weight: 600;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+
+  padding: 11px 12px;
+
+  border: 1px solid #d9c8cc;
+
+  border-radius: 7px;
+
+  background-color: white;
+
+  font-size: 1rem;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid #d8aab5;
+  border-color: #b97888;
+}
+
+textarea {
+  resize: vertical;
+}
+
+
+/* ---------- Buttons ---------- */
+
+button {
+  border: none;
+
+  border-radius: 7px;
+
+  padding: 10px 18px;
+
+  margin: 5px 8px 5px 0;
+
+  font-size: 0.95rem;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  background-color: #a76071;
+  color: white;
+}
+
+button:hover {
+  background-color: #8f4e5e;
+}
+
+button:disabled {
+  background-color: #cbbdc0;
+  cursor: not-allowed;
+}
+
+
+/* ---------- Content Cards ---------- */
+
+/*
+   Many of the pages currently use divs separated
+   by horizontal rules. We'll gradually replace
+   those with specific card classes later.
+*/
+
+section {
+  margin: 28px 0;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid #eadcdf;
+  margin: 26px 0;
+}
+
+
+/* ---------- Status / Message Styling ---------- */
+
+p {
+  line-height: 1.55;
+}
+
+
+/* ---------- Mobile Layout ---------- */
+
+@media (max-width: 650px) {
+  .page-container {
+    width: 90%;
+    padding-top: 25px;
+  }
+
+  h1 {
+    font-size: 1.9rem;
+  }
+
+  nav {
+    padding: 14px 5%;
+  }
+
+  form {
+    padding: 20px;
+  }
+}
+
+/* =========================================
+   HOMEPAGE
+   ========================================= */
+
+.hero-section {
+  min-height: 420px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 60px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f9e8eb,
+      #fff7f4
+    );
+
+  border-radius: 18px;
+
+  margin-bottom: 55px;
+}
+
+.hero-content {
+  max-width: 700px;
+}
+
+.hero-tagline {
+  text-transform: uppercase;
+
+  letter-spacing: 2px;
+
+  font-size: 0.85rem;
+  font-weight: 700;
+
+  color: #a76071;
+}
+
+.hero-section h1 {
+  font-size: 3rem;
+
+  margin:
+    10px 0
+    20px;
+}
+
+.hero-description {
+  font-size: 1.1rem;
+
+  max-width: 620px;
+
+  margin-bottom: 30px;
+}
+
+.hero-buttons {
+  display: flex;
+
+  gap: 14px;
+
+  flex-wrap: wrap;
+}
+
+
+/* ---------- Link Buttons ---------- */
+
+.primary-link-button,
+.secondary-link-button {
+  display: inline-block;
+
+  padding: 12px 20px;
+
+  border-radius: 8px;
+
+  font-weight: 700;
+
+  text-decoration: none;
+}
+
+.primary-link-button {
+  background-color: #a76071;
+  color: white;
+}
+
+.primary-link-button:hover {
+  background-color: #8f4e5e;
+
+  text-decoration: none;
+}
+
+.secondary-link-button {
+  background-color: white;
+
+  color: #8a4f5d;
+
+  border: 1px solid #d8aab5;
+}
+
+.secondary-link-button:hover {
+  background-color: #fff0f3;
+
+  text-decoration: none;
+}
+
+
+/* ---------- Homepage Sections ---------- */
+
+.home-section {
+  margin: 60px 0;
+}
+
+.service-grid,
+.steps-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(210px, 1fr)
+    );
+
+  gap: 20px;
+
+  margin-top: 25px;
+}
+
+
+/* ---------- Cards ---------- */
+
+.service-card,
+.step-card {
+  background-color: white;
+
+  padding: 24px;
+
+  border-radius: 12px;
+
+  border: 1px solid #eadcdf;
+
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.service-card h3,
+.step-card h3 {
+  margin-top: 0;
+}
+
+
+/* ---------- Provider CTA ---------- */
+
+.provider-cta {
+  margin-top: 60px;
+
+  padding: 45px;
+
+  text-align: center;
+
+  background-color: #f6e4e8;
+
+  border-radius: 16px;
+}
+
+
+/* ---------- Mobile Homepage ---------- */
+
+@media (max-width: 650px) {
+
+  .hero-section {
+    padding: 35px 25px;
+
+    min-height: auto;
+  }
+
+  .hero-section h1 {
+    font-size: 2.2rem;
+  }
+
+  .provider-cta {
+    padding: 30px 20px;
+  }
+}
+
+/* =========================================
+   PROVIDER BROWSING PAGE
+   ========================================= */
+
+.providers-header {
+  margin-bottom: 30px;
+}
+
+.page-eyebrow {
+  margin-bottom: 6px;
+
+  color: #a76071;
+
+  text-transform: uppercase;
+
+  letter-spacing: 1.5px;
+
+  font-size: 0.8rem;
+
+  font-weight: 700;
+}
+
+
+/* ---------- Search / Filter Panel ---------- */
+
+.provider-filter-panel {
+  background-color: white;
+
+  padding: 24px;
+
+  border: 1px solid #eadcdf;
+
+  border-radius: 14px;
+
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.05);
+
+  margin-bottom: 25px;
+}
+
+.provider-filter-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 18px;
+}
+
+.clear-filter-button {
+  margin-top: 18px;
+
+  background-color: #6f6265;
+}
+
+.clear-filter-button:hover {
+  background-color: #574b4e;
+}
+
+
+/* ---------- Results ---------- */
+
+.provider-result-count {
+  color: #74686a;
+
+  margin-bottom: 20px;
+}
+
+
+/* ---------- Provider Card Grid ---------- */
+
+.provider-card-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(300px, 1fr)
+    );
+
+  gap: 24px;
+}
+
+
+/* ---------- Provider Card ---------- */
+
+.provider-card {
+  background-color: white;
+
+  border: 1px solid #eadcdf;
+
+  border-radius: 16px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 5px 18px rgba(0, 0, 0, 0.06);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.provider-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.09);
+}
+
+
+/* ---------- Provider Avatar ---------- */
+
+.provider-avatar {
+  height: 120px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f4d9df,
+      #fceeed
+    );
+
+  color: #8a4f5d;
+
+  font-size: 3rem;
+
+  font-weight: 700;
+}
+
+
+/* ---------- Provider Card Content ---------- */
+
+.provider-card-content {
+  padding: 24px;
+}
+
+.provider-card-top h2 {
+  margin:
+    4px 0
+    8px;
+
+  font-size: 1.5rem;
+}
+
+.verified-label {
+  margin: 0;
+
+  color: #9a5968;
+
+  font-size: 0.75rem;
+
+  text-transform: uppercase;
+
+  letter-spacing: 1px;
+
+  font-weight: 700;
+}
+
+.provider-name {
+  font-weight: 600;
+
+  margin:
+    0 0
+    4px;
+}
+
+.provider-location {
+  color: #74686a;
+
+  margin:
+    0 0
+    15px;
+}
+
+.provider-bio {
+  min-height: 48px;
+}
+
+
+/* ---------- Service Tags ---------- */
+
+.service-tags {
+  display: flex;
+
+  gap: 8px;
+
+  flex-wrap: wrap;
+
+  margin:
+    18px 0;
+}
+
+.service-tag {
+  padding:
+    6px 10px;
+
+  background-color: #faecef;
+
+  border-radius: 20px;
+
+  font-size: 0.8rem;
+
+  color: #7d4855;
+}
+
+
+/* ---------- Service Preview ---------- */
+
+.provider-service-preview {
+  border-top:
+    1px solid #f0e5e7;
+
+  border-bottom:
+    1px solid #f0e5e7;
+
+  padding:
+    12px 0;
+
+  margin-bottom: 20px;
+}
+
+.service-preview-row {
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 12px;
+
+  padding:
+    5px 0;
+}
+
+
+/* ---------- Provider Button ---------- */
+
+.provider-card-button {
+  display: block;
+
+  width: 100%;
+
+  text-align: center;
+
+  padding:
+    11px 18px;
+
+  border-radius: 8px;
+
+  background-color: #a76071;
+
+  color: white;
+
+  font-weight: 700;
+
+  text-decoration: none;
+}
+
+.provider-card-button:hover {
+  background-color: #8f4e5e;
+
+  text-decoration: none;
+}
+
+
+/* ---------- Empty State ---------- */
+
+.empty-state {
+  background-color: white;
+
+  padding: 40px;
+
+  border-radius: 14px;
+
+  border: 1px solid #eadcdf;
+
+  text-align: center;
+}
+
+
+/* ---------- Mobile ---------- */
+
+@media (max-width: 750px) {
+
+  .provider-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .provider-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================
+   PROVIDER DETAILS PAGE
+   ========================================= */
+
+
+/* ---------- Provider Hero ---------- */
+
+.provider-profile-hero {
+  display: flex;
+
+  align-items: center;
+
+  gap: 30px;
+
+  padding: 35px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f7e4e8,
+      #fff8f5
+    );
+
+  border-radius: 18px;
+
+  margin-bottom: 35px;
+}
+
+.provider-profile-avatar {
+  min-width: 120px;
+  width: 120px;
+  height: 120px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background-color: white;
+
+  color: #945365;
+
+  font-size: 3.2rem;
+  font-weight: 700;
+
+  box-shadow:
+    0 5px 18px rgba(0, 0, 0, 0.07);
+}
+
+.provider-profile-info h1 {
+  margin:
+    5px 0
+    8px;
+}
+
+.provider-profile-name {
+  font-weight: 600;
+
+  margin-bottom: 4px;
+}
+
+.provider-profile-location {
+  color: #76686b;
+
+  margin-top: 0;
+}
+
+.provider-profile-bio {
+  max-width: 650px;
+}
+
+.provider-rating {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin:
+    15px 0;
+}
+
+.provider-rating strong {
+  color: #99576a;
+}
+
+
+/* ---------- Main Layout ---------- */
+
+.provider-details-layout {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.6fr)
+    minmax(300px, 0.8fr);
+
+  gap: 28px;
+
+  align-items: start;
+}
+
+.provider-details-main {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 25px;
+}
+
+
+/* ---------- Shared Detail Card ---------- */
+
+.details-card,
+.booking-card {
+  background-color: white;
+
+  padding: 28px;
+
+  border-radius: 16px;
+
+  border: 1px solid #eadcdf;
+
+  box-shadow:
+    0 5px 18px rgba(0, 0, 0, 0.05);
+}
+
+.section-heading h2 {
+  margin-top: 0;
+}
+
+
+/* ---------- Service List ---------- */
+
+.details-service-list {
+  display: flex;
+
+  flex-direction: column;
+}
+
+.details-service-item {
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding:
+    20px 0;
+
+  border-bottom:
+    1px solid #f0e5e7;
+}
+
+.details-service-item:last-child {
+  border-bottom: 0;
+}
+
+.details-service-item h3 {
+  margin:
+    0 0
+    8px;
+}
+
+.details-service-item p {
+  margin:
+    0 0
+    8px;
+}
+
+.service-duration {
+  color: #76686b;
+
+  font-size: 0.9rem;
+}
+
+.service-price {
+  white-space: nowrap;
+
+  color: #8a4f5d;
+
+  font-size: 1.15rem;
+}
+
+
+/* ---------- Availability ---------- */
+
+.availability-list {
+  display: flex;
+
+  flex-direction: column;
+}
+
+.availability-row {
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding:
+    13px 0;
+
+  border-bottom:
+    1px solid #f0e5e7;
+}
+
+.availability-row:last-child {
+  border-bottom: 0;
+}
+
+
+/* ---------- Reviews ---------- */
+
+.review-list {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+.review-card {
+  background-color: #fffafa;
+
+  padding: 18px;
+
+  border-radius: 10px;
+
+  border: 1px solid #f0e2e5;
+}
+
+.review-card p {
+  margin:
+    8px 0;
+}
+
+.review-card small {
+  color: #75686b;
+}
+
+.review-rating {
+  color: #a76071;
+
+  letter-spacing: 2px;
+}
+
+
+/* ---------- Booking Sidebar ---------- */
+
+.booking-sidebar {
+  position: relative;
+}
+
+.booking-card {
+  position: sticky;
+
+  top: 25px;
+}
+
+.booking-card h2 {
+  margin-top: 0;
+}
+
+
+/* Override the global form style because
+   the booking form already sits inside
+   its own card. */
+
+.booking-form {
+  padding: 0;
+
+  margin:
+    20px 0
+    0;
+
+  max-width: none;
+
+  box-shadow: none;
+
+  background: transparent;
+}
+
+.booking-submit-button {
+  width: 100%;
+
+  margin-top: 8px;
+
+  padding: 13px;
+}
+
+
+/* ---------- Messages ---------- */
+
+.success-message {
+  padding: 12px;
+
+  margin:
+    12px 0;
+
+  border-radius: 8px;
+
+  background-color: #eef7ef;
+
+  color: #365c3c;
+}
+
+.error-message {
+  padding: 12px;
+
+  margin:
+    12px 0;
+
+  border-radius: 8px;
+
+  background-color: #fff0f1;
+
+  color: #8f3947;
+}
+
+.booking-note {
+  padding: 12px;
+
+  background-color: #fbf4f5;
+
+  border-radius: 8px;
+
+  color: #6c5a5e;
+}
+
+.secondary-action-button {
+  background-color: #726367;
+}
+
+.secondary-action-button:hover {
+  background-color: #594d50;
+}
+
+.page-message {
+  padding: 40px;
+
+  text-align: center;
+
+  background-color: white;
+
+  border-radius: 14px;
+}
+
+
+/* ---------- Mobile ---------- */
+
+@media (max-width: 850px) {
+
+  .provider-details-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-card {
+    position: static;
+  }
+}
+
+
+@media (max-width: 650px) {
+
+  .provider-profile-hero {
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    padding: 25px;
+  }
+
+  .provider-profile-avatar {
+    width: 90px;
+    min-width: 90px;
+    height: 90px;
+
+    font-size: 2.5rem;
+  }
+
+  .details-service-item {
+    flex-direction: column;
+
+    gap: 8px;
+  }
+
+  .availability-row {
+    flex-direction: column;
+
+    gap: 4px;
+  }
+}
+
+
+/* =========================================
+   LOGIN / REGISTER PAGES
+   ========================================= */
+
+.auth-page {
+  min-height: 70vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    30px 0;
+}
+
+.auth-card {
+  width: 100%;
+
+  max-width: 560px;
+
+  background-color: white;
+
+  padding: 38px;
+
+  border-radius: 18px;
+
+  border: 1px solid #eadcdf;
+
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.07);
+}
+
+.auth-header {
+  text-align: center;
+
+  margin-bottom: 25px;
+}
+
+.auth-header h1 {
+  margin:
+    5px 0
+    10px;
+}
+
+.auth-header p:last-child {
+  color: #716468;
+}
+
+
+/* ---------- Auth Form ---------- */
+
+.auth-form {
+  max-width: none;
+
+  padding: 0;
+
+  margin: 0;
+
+  background: transparent;
+
+  box-shadow: none;
+}
+
+.auth-name-grid {
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 14px;
+}
+
+.auth-submit-button {
+  width: 100%;
+
+  margin-top: 8px;
+
+  padding: 13px;
+}
+
+
+/* ---------- Bottom Link ---------- */
+
+.auth-footer {
+  margin-top: 24px;
+
+  text-align: center;
+
+  color: #716468;
+}
+
+.auth-footer a {
+  font-weight: 700;
+}
+
+
+/* ---------- Mobile ---------- */
+
+@media (max-width: 650px) {
+
+  .auth-card {
+    padding: 26px 20px;
+  }
+
+  .auth-name-grid {
+    grid-template-columns: 1fr;
+  }
+}

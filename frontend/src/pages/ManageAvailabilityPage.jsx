@@ -1,42 +1,58 @@
 // ManageAvailabilityPage.jsx
-// Lets providers view, add, edit, and delete
-// the time blocks when they are available for bookings.
+//
+// Provider availability management page.
+//
+// Providers can:
+// - add availability blocks
+// - edit availability
+// - delete availability
 
 import { useEffect, useState } from "react";
 import axios from "axios";
 
 function ManageAvailabilityPage() {
-  // Stores availability records from the backend.
+  // ======================================
+  // AVAILABILITY DATA
+  // ======================================
+
   const [availability, setAvailability] = useState([]);
 
-  // Form fields.
-  const [date, setDate] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+  const [formData, setFormData] = useState({
+    date: "",
+    start_time: "",
+    end_time: "",
+  });
 
-  // Tracks which availability block is being edited.
   const [editingId, setEditingId] = useState(null);
 
-  // Stores an error message if something goes wrong.
+  // ======================================
+  // PAGE STATE
+  // ======================================
+
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
 
   // ======================================
-  // FETCH PROVIDER AVAILABILITY
+  // LOAD AVAILABILITY
   // ======================================
 
   async function fetchAvailability() {
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token");
 
-      const response = await axios.get(
-        "http://localhost:3001/api/availability/mine",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response =
+        await axios.get(
+          "http://localhost:3001/api/availability/mine",
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
 
       setAvailability(response.data);
       setError("");
@@ -48,66 +64,97 @@ function ManageAvailabilityPage() {
         err.response?.data?.error ||
         "Unable to load availability."
       );
+
+    } finally {
+      setLoading(false);
     }
   }
 
 
-  // Load availability when page first opens.
   useEffect(() => {
     fetchAvailability();
   }, []);
 
 
   // ======================================
-  // CREATE OR UPDATE AVAILABILITY
+  // FORM CHANGES
+  // ======================================
+
+  function handleChange(event) {
+    const { name, value } = event.target;
+
+    setFormData((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  }
+
+
+  // ======================================
+  // RESET FORM
+  // ======================================
+
+  function resetForm() {
+    setFormData({
+      date: "",
+      start_time: "",
+      end_time: "",
+    });
+
+    setEditingId(null);
+  }
+
+
+  // ======================================
+  // ADD / EDIT AVAILABILITY
   // ======================================
 
   async function handleSubmit(event) {
     event.preventDefault();
 
+    setMessage("");
+    setError("");
+
     try {
-      const token = localStorage.getItem("token");
-
-      const availabilityData = {
-        date,
-        start_time: startTime,
-        end_time: endTime,
-      };
+      const token =
+        localStorage.getItem("token");
 
 
-      // If editingId exists, update an existing block.
       if (editingId) {
         await axios.patch(
           `http://localhost:3001/api/availability/${editingId}`,
-          availabilityData,
+          formData,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization:
+                `Bearer ${token}`,
             },
           }
         );
 
+        setMessage(
+          "Availability updated successfully."
+        );
+
       } else {
-        // Otherwise create a new availability block.
         await axios.post(
           "http://localhost:3001/api/availability",
-          availabilityData,
+          formData,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization:
+                `Bearer ${token}`,
             },
           }
+        );
+
+        setMessage(
+          "Availability added successfully."
         );
       }
 
 
-      // Clear the form after saving.
-      setDate("");
-      setStartTime("");
-      setEndTime("");
-      setEditingId(null);
-
-      // Reload availability so the page updates immediately.
+      resetForm();
       await fetchAvailability();
 
     } catch (err) {
@@ -122,32 +169,24 @@ function ManageAvailabilityPage() {
 
 
   // ======================================
-  // START EDITING
+  // EDIT AVAILABILITY
   // ======================================
 
-  function handleEdit(block) {
+  function startEditing(block) {
     setEditingId(block.id);
 
-    // PostgreSQL may return a full date string,
-    // so slice it to YYYY-MM-DD for the date input.
-    setDate(block.date.slice(0, 10));
+    setFormData({
+      date: block.date.slice(0, 10),
+      start_time:
+        block.start_time.slice(0, 5),
+      end_time:
+        block.end_time.slice(0, 5),
+    });
 
-    // TIME values may include seconds.
-    // The HTML time input only needs HH:MM here.
-    setStartTime(block.start_time.slice(0, 5));
-    setEndTime(block.end_time.slice(0, 5));
-  }
-
-
-  // ======================================
-  // CANCEL EDIT
-  // ======================================
-
-  function cancelEdit() {
-    setEditingId(null);
-    setDate("");
-    setStartTime("");
-    setEndTime("");
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
 
 
@@ -155,18 +194,26 @@ function ManageAvailabilityPage() {
   // DELETE AVAILABILITY
   // ======================================
 
-  async function handleDelete(id) {
+  async function deleteAvailability(id) {
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token");
 
       await axios.delete(
         `http://localhost:3001/api/availability/${id}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization:
+              `Bearer ${token}`,
           },
         }
       );
+
+      setMessage(
+        "Availability deleted successfully."
+      );
+
+      setError("");
 
       await fetchAvailability();
 
@@ -181,144 +228,218 @@ function ManageAvailabilityPage() {
   }
 
 
+  if (loading) {
+    return (
+      <div className="page-message">
+        Loading availability...
+      </div>
+    );
+  }
+
+
   return (
-    <div>
-      <h1>Manage Availability</h1>
+    <div className="dashboard-page">
+
+      <div className="dashboard-header">
+
+        <p className="page-eyebrow">
+          Provider Tools
+        </p>
+
+        <h1>
+          Manage Availability
+        </h1>
+
+        <p>
+          Set the dates and times clients
+          can use to book appointments.
+        </p>
+
+      </div>
+
+
+      {message && (
+        <div className="success-message">
+          {message}
+        </div>
+      )}
+
 
       {error && (
-        <p>{error}</p>
+        <div className="error-message">
+          {error}
+        </div>
       )}
 
 
       {/* ======================================
-          CREATE / EDIT FORM
+          AVAILABILITY FORM
           ====================================== */}
 
-      <form onSubmit={handleSubmit}>
+      <section className="management-card">
 
-        <div>
-          <label htmlFor="availability-date">
-            Date
-          </label>
-
-          <input
-            id="availability-date"
-            type="date"
-            value={date}
-            onChange={(event) =>
-              setDate(event.target.value)
-            }
-            required
-          />
-        </div>
-
-
-        <div>
-          <label htmlFor="start-time">
-            Start Time
-          </label>
-
-          <input
-            id="start-time"
-            type="time"
-            value={startTime}
-            onChange={(event) =>
-              setStartTime(event.target.value)
-            }
-            required
-          />
-        </div>
-
-
-        <div>
-          <label htmlFor="end-time">
-            End Time
-          </label>
-
-          <input
-            id="end-time"
-            type="time"
-            value={endTime}
-            onChange={(event) =>
-              setEndTime(event.target.value)
-            }
-            required
-          />
-        </div>
-
-
-        <button type="submit">
+        <h2>
           {editingId
-            ? "Update Availability"
+            ? "Edit Availability"
             : "Add Availability"}
-        </button>
+        </h2>
 
 
-        {editingId && (
-          <button
-            type="button"
-            onClick={cancelEdit}
-          >
-            Cancel Edit
-          </button>
+        <form
+          className="management-form"
+          onSubmit={handleSubmit}
+        >
+
+          <div>
+            <label htmlFor="date">
+              Date
+            </label>
+
+            <input
+              id="date"
+              name="date"
+              type="date"
+              value={formData.date}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+
+          <div className="management-grid">
+
+            <div>
+              <label htmlFor="start_time">
+                Start Time
+              </label>
+
+              <input
+                id="start_time"
+                name="start_time"
+                type="time"
+                value={formData.start_time}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+
+            <div>
+              <label htmlFor="end_time">
+                End Time
+              </label>
+
+              <input
+                id="end_time"
+                name="end_time"
+                type="time"
+                value={formData.end_time}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+          </div>
+
+
+          <div className="management-form-actions">
+
+            <button type="submit">
+              {editingId
+                ? "Save Changes"
+                : "Add Availability"}
+            </button>
+
+
+            {editingId && (
+              <button
+                type="button"
+                className="secondary-action-button"
+                onClick={resetForm}
+              >
+                Cancel Edit
+              </button>
+            )}
+
+          </div>
+
+        </form>
+
+      </section>
+
+
+      {/* ======================================
+          AVAILABILITY LIST
+          ====================================== */}
+
+      <section className="management-card">
+
+        <h2>
+          Current Availability
+        </h2>
+
+
+        {availability.length === 0 ? (
+          <p>
+            No availability has been added yet.
+          </p>
+        ) : (
+          <div className="management-list">
+
+            {availability.map((block) => (
+              <article
+                className="management-item"
+                key={block.id}
+              >
+
+                <div>
+
+                  <h3>
+                    {block.date.slice(0, 10)}
+                  </h3>
+
+                  <p className="management-meta">
+                    {block.start_time.slice(0, 5)}
+                    {" - "}
+                    {block.end_time.slice(0, 5)}
+                  </p>
+
+                </div>
+
+
+                <div className="management-item-actions">
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      startEditing(block)
+                    }
+                  >
+                    Edit
+                  </button>
+
+
+                  <button
+                    type="button"
+                    className="danger-button"
+                    onClick={() =>
+                      deleteAvailability(
+                        block.id
+                      )
+                    }
+                  >
+                    Delete
+                  </button>
+
+                </div>
+
+              </article>
+            ))}
+
+          </div>
         )}
 
-      </form>
-
-
-      <hr />
-
-
-      {/* ======================================
-          EXISTING AVAILABILITY
-          ====================================== */}
-
-      <h2>My Availability</h2>
-
-      {availability.length === 0 && (
-        <p>No availability has been added yet.</p>
-      )}
-
-
-      {availability.map((block) => (
-        <div key={block.id}>
-
-          <p>
-            Date: {block.date.slice(0, 10)}
-          </p>
-
-          <p>
-            Start: {block.start_time}
-          </p>
-
-          <p>
-            End: {block.end_time}
-          </p>
-
-
-          <button
-            type="button"
-            onClick={() =>
-              handleEdit(block)
-            }
-          >
-            Edit
-          </button>
-
-
-          <button
-            type="button"
-            onClick={() =>
-              handleDelete(block.id)
-            }
-          >
-            Delete
-          </button>
-
-          <hr />
-
-        </div>
-      ))}
+      </section>
 
     </div>
   );

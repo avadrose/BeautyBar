@@ -1,44 +1,57 @@
 // ClientDashboard.jsx
-// Shows the logged-in client's appointments
-// and lets the client cancel or reschedule them.
+//
+// Client appointment management page.
+//
+// Clients can:
+// - view their appointments
+// - cancel scheduled appointments
+// - reschedule scheduled appointments
+//
+// This version keeps the existing functionality
+// but gives the page a cleaner BeautyBar layout.
 
 import { useEffect, useState } from "react";
 import axios from "axios";
 
 function ClientDashboard() {
-  // Stores appointments returned by the backend.
+  // ======================================
+  // APPOINTMENT DATA
+  // ======================================
+
   const [appointments, setAppointments] = useState([]);
 
-  // Tracks loading state.
+  // Stores reschedule form values separately
+  // for each appointment.
+  const [rescheduleData, setRescheduleData] = useState({});
+
+  // ======================================
+  // PAGE STATE
+  // ======================================
+
   const [loading, setLoading] = useState(true);
-
-  // Stores an error message if a request fails.
   const [error, setError] = useState("");
-
-  // Tracks which appointment is currently being rescheduled.
-  const [rescheduleId, setRescheduleId] = useState(null);
-
-  // Stores the new date/time for rescheduling.
-  const [newDate, setNewDate] = useState("");
-  const [newTime, setNewTime] = useState("");
+  const [message, setMessage] = useState("");
 
 
   // ======================================
-  // FETCH CLIENT APPOINTMENTS
+  // LOAD CLIENT APPOINTMENTS
   // ======================================
 
   async function fetchAppointments() {
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token");
 
-      const response = await axios.get(
-        "http://localhost:3001/api/appointments/mine",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response =
+        await axios.get(
+          "http://localhost:3001/api/appointments/mine",
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
 
       setAppointments(response.data);
       setError("");
@@ -57,7 +70,6 @@ function ClientDashboard() {
   }
 
 
-  // Load appointments when page first opens.
   useEffect(() => {
     fetchAppointments();
   }, []);
@@ -67,21 +79,31 @@ function ClientDashboard() {
   // CANCEL APPOINTMENT
   // ======================================
 
-  async function handleCancel(appointmentId) {
+  async function cancelAppointment(
+    appointmentId
+  ) {
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token");
 
       await axios.patch(
         `http://localhost:3001/api/appointments/${appointmentId}/cancel`,
         {},
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization:
+              `Bearer ${token}`,
           },
         }
       );
 
-      // Reload appointments so the updated
+      setMessage(
+        "Appointment cancelled successfully."
+      );
+
+      setError("");
+
+      // Reload appointments so the new
       // status appears immediately.
       await fetchAppointments();
 
@@ -97,22 +119,22 @@ function ClientDashboard() {
 
 
   // ======================================
-  // OPEN RESCHEDULE FORM
+  // UPDATE RESCHEDULE FORM
   // ======================================
 
-  function startReschedule(appointment) {
-    // Remember which appointment is being edited.
-    setRescheduleId(appointment.id);
+  function handleRescheduleChange(
+    appointmentId,
+    field,
+    value
+  ) {
+    setRescheduleData((current) => ({
+      ...current,
 
-    // Start the form with the appointment's
-    // current date and time.
-    setNewDate(
-      appointment.appointment_date.slice(0, 10)
-    );
-
-    setNewTime(
-      appointment.appointment_time.slice(0, 5)
-    );
+      [appointmentId]: {
+        ...current[appointmentId],
+        [field]: value,
+      },
+    }));
   }
 
 
@@ -120,29 +142,61 @@ function ClientDashboard() {
   // RESCHEDULE APPOINTMENT
   // ======================================
 
-  async function handleReschedule(appointmentId) {
+  async function rescheduleAppointment(
+    appointmentId
+  ) {
+    const data =
+      rescheduleData[appointmentId];
+
+    if (
+      !data?.appointment_date ||
+      !data?.appointment_time
+    ) {
+      setError(
+        "Please select a new date and time."
+      );
+
+      return;
+    }
+
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token");
 
       await axios.patch(
         `http://localhost:3001/api/appointments/${appointmentId}/reschedule`,
         {
-          appointment_date: newDate,
-          appointment_time: newTime,
+          appointment_date:
+            data.appointment_date,
+
+          appointment_time:
+            data.appointment_time,
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization:
+              `Bearer ${token}`,
           },
         }
       );
 
-      // Close the reschedule form.
-      setRescheduleId(null);
-      setNewDate("");
-      setNewTime("");
+      setMessage(
+        "Appointment rescheduled successfully."
+      );
 
-      // Reload appointments with the new date/time.
+      setError("");
+
+      // Clear this appointment's reschedule form.
+      setRescheduleData((current) => {
+        const updated = {
+          ...current,
+        };
+
+        delete updated[appointmentId];
+
+        return updated;
+      });
+
       await fetchAppointments();
 
     } catch (err) {
@@ -156,149 +210,330 @@ function ClientDashboard() {
   }
 
 
+  // ======================================
+  // FORMAT TIME
+  // ======================================
+
+  function formatTime(time) {
+    if (!time) return "";
+
+    const [hours, minutes] =
+      time
+        .slice(0, 5)
+        .split(":")
+        .map(Number);
+
+    const date = new Date();
+
+    date.setHours(hours);
+    date.setMinutes(minutes);
+
+    return date.toLocaleTimeString(
+      [],
+      {
+        hour: "numeric",
+        minute: "2-digit",
+      }
+    );
+  }
+
+
+  // ======================================
+  // LOADING STATE
+  // ======================================
+
   if (loading) {
-    return <p>Loading appointments...</p>;
+    return (
+      <div className="page-message">
+        Loading your appointments...
+      </div>
+    );
   }
 
 
   return (
-    <div>
-      <h1>My Appointments</h1>
+    <div className="dashboard-page">
+
+      {/* ======================================
+          PAGE HEADER
+          ====================================== */}
+
+      <div className="dashboard-header">
+
+        <p className="page-eyebrow">
+          My BeautyBar
+        </p>
+
+        <h1>
+          My Appointments
+        </h1>
+
+        <p>
+          View, manage, cancel, or reschedule
+          your BeautyBar appointments.
+        </p>
+
+      </div>
+
+
+      {/* ======================================
+          PAGE MESSAGES
+          ====================================== */}
+
+      {message && (
+        <div className="success-message">
+          {message}
+        </div>
+      )}
+
 
       {error && (
-        <p>{error}</p>
-      )}
-
-      {/* Message shown if client has no appointments */}
-      {appointments.length === 0 && (
-        <p>You do not have any appointments yet.</p>
+        <div className="error-message">
+          {error}
+        </div>
       )}
 
 
-      {appointments.map((appointment) => (
-        <div key={appointment.id}>
+      {/* ======================================
+          EMPTY STATE
+          ====================================== */}
 
-          <h2>{appointment.service_name}</h2>
+      {appointments.length === 0 ? (
+        <div className="dashboard-empty-state">
 
-          <p>
-            Provider: {appointment.business_name}
-          </p>
-
-          <p>
-            Location: {appointment.location}
-          </p>
+          <h2>
+            No appointments yet
+          </h2>
 
           <p>
-            Date: {appointment.appointment_date}
+            Browse BeautyBar providers and book
+            your first appointment.
           </p>
-
-          <p>
-            Time: {appointment.appointment_time}
-          </p>
-
-          <p>
-            Duration: {appointment.duration} minutes
-          </p>
-
-          <p>
-            Price: ${appointment.price}
-          </p>
-
-          <p>
-            Status: {appointment.status}
-          </p>
-
-
-          {/* Only scheduled appointments can be changed */}
-          {appointment.status === "scheduled" && (
-            <div>
-
-              <button
-                type="button"
-                onClick={() =>
-                  handleCancel(appointment.id)
-                }
-              >
-                Cancel Appointment
-              </button>
-
-
-              <button
-                type="button"
-                onClick={() =>
-                  startReschedule(appointment)
-                }
-              >
-                Reschedule
-              </button>
-
-            </div>
-          )}
-
-
-          {/* Show reschedule form only for the
-              appointment currently being edited */}
-          {rescheduleId === appointment.id && (
-            <div>
-
-              <h3>Choose a New Time</h3>
-
-              <div>
-                <label>
-                  Date
-                </label>
-
-                <input
-                  type="date"
-                  value={newDate}
-                  onChange={(event) =>
-                    setNewDate(event.target.value)
-                  }
-                />
-              </div>
-
-
-              <div>
-                <label>
-                  Time
-                </label>
-
-                <input
-                  type="time"
-                  value={newTime}
-                  onChange={(event) =>
-                    setNewTime(event.target.value)
-                  }
-                />
-              </div>
-
-
-              <button
-                type="button"
-                onClick={() =>
-                  handleReschedule(appointment.id)
-                }
-              >
-                Save New Appointment
-              </button>
-
-
-              <button
-                type="button"
-                onClick={() =>
-                  setRescheduleId(null)
-                }
-              >
-                Never Mind
-              </button>
-
-            </div>
-          )}
-
-          <hr />
 
         </div>
-      ))}
+      ) : (
+        <div className="appointment-card-list">
+
+          {/* ==================================
+              APPOINTMENT CARDS
+              ================================== */}
+
+          {appointments.map(
+            (appointment) => (
+              <article
+                className="appointment-card"
+                key={appointment.id}
+              >
+
+                {/* CARD HEADER */}
+
+                <div className="appointment-card-header">
+
+                  <div>
+
+                    <p className="appointment-provider">
+                      {appointment.business_name}
+                    </p>
+
+                    <h2>
+                      {appointment.service_name}
+                    </h2>
+
+                  </div>
+
+
+                  <span
+                    className={
+                      `appointment-status status-${appointment.status}`
+                    }
+                  >
+                    {appointment.status}
+                  </span>
+
+                </div>
+
+
+                {/* ==================================
+                    APPOINTMENT DETAILS
+                    ================================== */}
+
+                <div className="appointment-details-grid">
+
+                  <div>
+                    <span className="detail-label">
+                      Date
+                    </span>
+
+                    <strong>
+                      {appointment.appointment_date
+                        .slice(0, 10)}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span className="detail-label">
+                      Time
+                    </span>
+
+                    <strong>
+                      {formatTime(
+                        appointment.appointment_time
+                      )}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span className="detail-label">
+                      Duration
+                    </span>
+
+                    <strong>
+                      {appointment.duration} minutes
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span className="detail-label">
+                      Price
+                    </span>
+
+                    <strong>
+                      ${appointment.price}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span className="detail-label">
+                      Location
+                    </span>
+
+                    <strong>
+                      {appointment.location}
+                    </strong>
+                  </div>
+
+                </div>
+
+
+                {/* ==================================
+                    SCHEDULED APPOINTMENT ACTIONS
+                    ================================== */}
+
+                {appointment.status ===
+                  "scheduled" && (
+
+                  <div className="appointment-actions">
+
+                    {/* CANCEL */}
+
+                    <button
+                      type="button"
+                      className="danger-button"
+                      onClick={() =>
+                        cancelAppointment(
+                          appointment.id
+                        )
+                      }
+                    >
+                      Cancel Appointment
+                    </button>
+
+
+                    {/* RESCHEDULE SECTION */}
+
+                    <div className="reschedule-panel">
+
+                      <h3>
+                        Reschedule
+                      </h3>
+
+                      <div className="reschedule-grid">
+
+                        <div>
+                          <label
+                            htmlFor={`date-${appointment.id}`}
+                          >
+                            New Date
+                          </label>
+
+                          <input
+                            id={`date-${appointment.id}`}
+                            type="date"
+
+                            value={
+                              rescheduleData[
+                                appointment.id
+                              ]?.appointment_date || ""
+                            }
+
+                            onChange={(event) =>
+                              handleRescheduleChange(
+                                appointment.id,
+                                "appointment_date",
+                                event.target.value
+                              )
+                            }
+                          />
+                        </div>
+
+
+                        <div>
+                          <label
+                            htmlFor={`time-${appointment.id}`}
+                          >
+                            New Time
+                          </label>
+
+                          <input
+                            id={`time-${appointment.id}`}
+                            type="time"
+
+                            value={
+                              rescheduleData[
+                                appointment.id
+                              ]?.appointment_time || ""
+                            }
+
+                            onChange={(event) =>
+                              handleRescheduleChange(
+                                appointment.id,
+                                "appointment_time",
+                                event.target.value
+                              )
+                            }
+                          />
+                        </div>
+
+                      </div>
+
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          rescheduleAppointment(
+                            appointment.id
+                          )
+                        }
+                      >
+                        Save New Appointment
+                      </button>
+
+                    </div>
+
+                  </div>
+                )}
+
+              </article>
+            )
+          )}
+
+        </div>
+      )}
+
     </div>
   );
 }

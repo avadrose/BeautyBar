@@ -1,29 +1,43 @@
 // ManageServicesPage.jsx
-// Lets the logged-in provider view, add, edit, and delete
-// the services they offer.
+//
+// Provider service management page.
+//
+// Providers can:
+// - view their services
+// - add a service
+// - edit an existing service
+// - delete a service
 
 import { useEffect, useState } from "react";
 import axios from "axios";
 
 function ManageServicesPage() {
-  // Stores provider services from the backend.
+  // ======================================
+  // SERVICE DATA
+  // ======================================
+
   const [services, setServices] = useState([]);
 
-  // Form fields for creating a new service.
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [duration, setDuration] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    price: "",
+    duration: "",
+  });
 
-  // Tracks which service is currently being edited.
   const [editingId, setEditingId] = useState(null);
 
-  // Stores error messages.
+  // ======================================
+  // PAGE STATE
+  // ======================================
+
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
 
   // ======================================
-  // FETCH PROVIDER SERVICES
+  // LOAD PROVIDER SERVICES
   // ======================================
 
   async function fetchServices() {
@@ -49,6 +63,9 @@ function ManageServicesPage() {
         err.response?.data?.error ||
         "Unable to load services."
       );
+
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -59,54 +76,91 @@ function ManageServicesPage() {
 
 
   // ======================================
-  // CREATE OR UPDATE SERVICE
+  // HANDLE FORM CHANGES
+  // ======================================
+
+  function handleChange(event) {
+    const { name, value } = event.target;
+
+    setFormData((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  }
+
+
+  // ======================================
+  // RESET FORM
+  // ======================================
+
+  function resetForm() {
+    setFormData({
+      name: "",
+      description: "",
+      price: "",
+      duration: "",
+    });
+
+    setEditingId(null);
+  }
+
+
+  // ======================================
+  // ADD OR UPDATE SERVICE
   // ======================================
 
   async function handleSubmit(event) {
     event.preventDefault();
 
+    setError("");
+    setMessage("");
+
     try {
       const token = localStorage.getItem("token");
 
-      const serviceData = {
-        name,
-        description,
-        price: Number(price),
-        duration: Number(duration),
+      const payload = {
+        name: formData.name,
+        description: formData.description,
+        price: Number(formData.price),
+        duration: Number(formData.duration),
       };
 
-      // If editingId exists, update the service.
+
+      // Edit existing service.
       if (editingId) {
         await axios.patch(
           `http://localhost:3001/api/services/${editingId}`,
-          serviceData,
+          payload,
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
+        );
+
+        setMessage(
+          "Service updated successfully."
         );
 
       } else {
-        // Otherwise create a brand-new service.
+        // Add new service.
         await axios.post(
           "http://localhost:3001/api/services",
-          serviceData,
+          payload,
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
+
+        setMessage(
+          "Service added successfully."
+        );
       }
 
-      // Clear the form after saving.
-      setName("");
-      setDescription("");
-      setPrice("");
-      setDuration("");
-      setEditingId(null);
 
+      resetForm();
       await fetchServices();
 
     } catch (err) {
@@ -124,26 +178,20 @@ function ManageServicesPage() {
   // START EDITING A SERVICE
   // ======================================
 
-  function handleEdit(service) {
-    // Fill the form with the selected service's current data.
+  function startEditing(service) {
     setEditingId(service.id);
-    setName(service.name);
-    setDescription(service.description || "");
-    setPrice(service.price);
-    setDuration(service.duration);
-  }
 
+    setFormData({
+      name: service.name,
+      description: service.description || "",
+      price: service.price,
+      duration: service.duration,
+    });
 
-  // ======================================
-  // CANCEL EDITING
-  // ======================================
-
-  function cancelEdit() {
-    setEditingId(null);
-    setName("");
-    setDescription("");
-    setPrice("");
-    setDuration("");
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
 
 
@@ -151,7 +199,7 @@ function ManageServicesPage() {
   // DELETE SERVICE
   // ======================================
 
-  async function handleDelete(serviceId) {
+  async function deleteService(serviceId) {
     try {
       const token = localStorage.getItem("token");
 
@@ -163,6 +211,12 @@ function ManageServicesPage() {
           },
         }
       );
+
+      setMessage(
+        "Service deleted successfully."
+      );
+
+      setError("");
 
       await fetchServices();
 
@@ -177,163 +231,236 @@ function ManageServicesPage() {
   }
 
 
+  if (loading) {
+    return (
+      <div className="page-message">
+        Loading services...
+      </div>
+    );
+  }
+
+
   return (
-    <div>
-      <h1>Manage Services</h1>
+    <div className="dashboard-page">
+
+      <div className="dashboard-header">
+
+        <p className="page-eyebrow">
+          Provider Tools
+        </p>
+
+        <h1>
+          Manage Services
+        </h1>
+
+        <p>
+          Add, update, or remove the services
+          you offer through BeautyBar.
+        </p>
+
+      </div>
+
+
+      {message && (
+        <div className="success-message">
+          {message}
+        </div>
+      )}
+
 
       {error && (
-        <p>{error}</p>
+        <div className="error-message">
+          {error}
+        </div>
       )}
 
 
       {/* ======================================
-          CREATE / EDIT SERVICE FORM
+          SERVICE FORM
           ====================================== */}
 
-      <form onSubmit={handleSubmit}>
+      <section className="management-card">
 
-        <div>
-          <label htmlFor="service-name">
-            Service Name
-          </label>
-
-          <input
-            id="service-name"
-            type="text"
-            value={name}
-            onChange={(event) =>
-              setName(event.target.value)
-            }
-            required
-          />
-        </div>
-
-
-        <div>
-          <label htmlFor="service-description">
-            Description
-          </label>
-
-          <textarea
-            id="service-description"
-            value={description}
-            onChange={(event) =>
-              setDescription(event.target.value)
-            }
-          />
-        </div>
-
-
-        <div>
-          <label htmlFor="service-price">
-            Price
-          </label>
-
-          <input
-            id="service-price"
-            type="number"
-            min="0"
-            step="0.01"
-            value={price}
-            onChange={(event) =>
-              setPrice(event.target.value)
-            }
-            required
-          />
-        </div>
-
-
-        <div>
-          <label htmlFor="service-duration">
-            Duration in Minutes
-          </label>
-
-          <input
-            id="service-duration"
-            type="number"
-            min="1"
-            value={duration}
-            onChange={(event) =>
-              setDuration(event.target.value)
-            }
-            required
-          />
-        </div>
-
-
-        <button type="submit">
+        <h2>
           {editingId
-            ? "Update Service"
+            ? "Edit Service"
             : "Add Service"}
-        </button>
+        </h2>
+
+        <form
+          className="management-form"
+          onSubmit={handleSubmit}
+        >
+
+          <div>
+            <label htmlFor="name">
+              Service Name
+            </label>
+
+            <input
+              id="name"
+              name="name"
+              type="text"
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
 
-        {/* Only show when editing an existing service */}
-        {editingId && (
-          <button
-            type="button"
-            onClick={cancelEdit}
-          >
-            Cancel Edit
-          </button>
+          <div>
+            <label htmlFor="description">
+              Description
+            </label>
+
+            <textarea
+              id="description"
+              name="description"
+              rows="4"
+              value={formData.description}
+              onChange={handleChange}
+            />
+          </div>
+
+
+          <div className="management-grid">
+
+            <div>
+              <label htmlFor="price">
+                Price
+              </label>
+
+              <input
+                id="price"
+                name="price"
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.price}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+
+            <div>
+              <label htmlFor="duration">
+                Duration (minutes)
+              </label>
+
+              <input
+                id="duration"
+                name="duration"
+                type="number"
+                min="1"
+                value={formData.duration}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+          </div>
+
+
+          <div className="management-form-actions">
+
+            <button type="submit">
+              {editingId
+                ? "Save Changes"
+                : "Add Service"}
+            </button>
+
+
+            {editingId && (
+              <button
+                type="button"
+                className="secondary-action-button"
+                onClick={resetForm}
+              >
+                Cancel Edit
+              </button>
+            )}
+
+          </div>
+
+        </form>
+
+      </section>
+
+
+      {/* ======================================
+          SERVICE LIST
+          ====================================== */}
+
+      <section className="management-card">
+
+        <h2>
+          Current Services
+        </h2>
+
+
+        {services.length === 0 ? (
+          <p>
+            You have not added any services yet.
+          </p>
+        ) : (
+          <div className="management-list">
+
+            {services.map((service) => (
+              <article
+                className="management-item"
+                key={service.id}
+              >
+
+                <div>
+
+                  <h3>
+                    {service.name}
+                  </h3>
+
+                  <p>
+                    {service.description}
+                  </p>
+
+                  <p className="management-meta">
+                    ${service.price}
+                    {" • "}
+                    {service.duration} minutes
+                  </p>
+
+                </div>
+
+
+                <div className="management-item-actions">
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      startEditing(service)
+                    }
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    type="button"
+                    className="danger-button"
+                    onClick={() =>
+                      deleteService(service.id)
+                    }
+                  >
+                    Delete
+                  </button>
+
+                </div>
+
+              </article>
+            ))}
+
+          </div>
         )}
 
-      </form>
-
-
-      <hr />
-
-
-      {/* ======================================
-          EXISTING SERVICES
-          ====================================== */}
-
-      <h2>My Services</h2>
-
-      {services.length === 0 && (
-        <p>You have not added any services yet.</p>
-      )}
-
-
-      {services.map((service) => (
-        <div key={service.id}>
-
-          <h3>{service.name}</h3>
-
-          <p>{service.description}</p>
-
-          <p>
-            Price: ${service.price}
-          </p>
-
-          <p>
-            Duration: {service.duration} minutes
-          </p>
-
-
-          <button
-            type="button"
-            onClick={() =>
-              handleEdit(service)
-            }
-          >
-            Edit
-          </button>
-
-
-          <button
-            type="button"
-            onClick={() =>
-              handleDelete(service.id)
-            }
-          >
-            Delete
-          </button>
-
-          <hr />
-
-        </div>
-      ))}
+      </section>
 
     </div>
   );

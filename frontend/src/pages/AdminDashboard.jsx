@@ -1,68 +1,110 @@
 // AdminDashboard.jsx
 //
-// Admin management page.
+// BeautyBar administrative dashboard.
 //
 // Admins can:
+//
 // - view all users
-// - view provider verification status
+// - view provider accounts
 // - verify providers
 // - reject providers
 // - suspend providers
-// - deactivate/reactivate user accounts
+// - deactivate users
+// - reactivate users
+//
+// Every request on this page requires
+// an authenticated admin JWT.
 
-import { useEffect, useState } from "react";
-import axios from "axios";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import api from "../api";
+
 
 function AdminDashboard() {
   // ======================================
-  // DATA
+  // ADMIN DATA
   // ======================================
 
-  const [users, setUsers] = useState([]);
-  const [providers, setProviders] = useState([]);
+  const [
+    users,
+    setUsers,
+  ] = useState([]);
+
+  const [
+    providers,
+    setProviders,
+  ] = useState([]);
+
 
   // ======================================
   // PAGE STATE
   // ======================================
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
+
+  const [message, setMessage] =
+    useState("");
 
 
   // ======================================
   // LOAD ADMIN DATA
   // ======================================
+  //
+  // Promise.all lets both requests run
+  // at the same time.
 
   async function fetchAdminData() {
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token");
+
 
       const [
         usersResponse,
         providersResponse,
       ] = await Promise.all([
-        axios.get(
-          "http://localhost:3001/api/admin/users",
+
+        // All BeautyBar users.
+        api.get(
+          "/api/admin/users",
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization:
+                `Bearer ${token}`,
             },
           }
         ),
 
-        axios.get(
-          "http://localhost:3001/api/admin/providers",
+
+        // All provider accounts,
+        // including pending/rejected/etc.
+        api.get(
+          "/api/admin/providers",
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization:
+                `Bearer ${token}`,
             },
           }
         ),
+
       ]);
 
-      setUsers(usersResponse.data);
-      setProviders(providersResponse.data);
+
+      setUsers(
+        usersResponse.data
+      );
+
+      setProviders(
+        providersResponse.data
+      );
 
       setError("");
 
@@ -89,13 +131,16 @@ function AdminDashboard() {
   // VERIFY PROVIDER
   // ======================================
 
-  async function verifyProvider(providerId) {
+  async function verifyProvider(
+    providerId
+  ) {
     try {
       const token =
         localStorage.getItem("token");
 
-      await axios.patch(
-        `http://localhost:3001/api/admin/providers/${providerId}/verify`,
+
+      await api.patch(
+        `/api/admin/providers/${providerId}/verify`,
         {},
         {
           headers: {
@@ -105,12 +150,15 @@ function AdminDashboard() {
         }
       );
 
+
       setMessage(
         "Provider verified successfully."
       );
 
       setError("");
 
+
+      // Refresh dashboard after update.
       await fetchAdminData();
 
     } catch (err) {
@@ -128,22 +176,29 @@ function AdminDashboard() {
   // REJECT PROVIDER
   // ======================================
 
-  async function rejectProvider(providerId) {
-    const notes = window.prompt(
-      "Why is this provider being rejected?"
-    );
+  async function rejectProvider(
+    providerId
+  ) {
+    // Ask admin for an explanation.
+    const notes =
+      window.prompt(
+        "Why is this provider being rejected?"
+      );
 
-    // If admin presses Cancel, stop here.
+
+    // Cancel button returns null.
     if (notes === null) {
       return;
     }
+
 
     try {
       const token =
         localStorage.getItem("token");
 
-      await axios.patch(
-        `http://localhost:3001/api/admin/providers/${providerId}/reject`,
+
+      await api.patch(
+        `/api/admin/providers/${providerId}/reject`,
         {
           notes,
         },
@@ -155,11 +210,13 @@ function AdminDashboard() {
         }
       );
 
+
       setMessage(
         "Provider rejected successfully."
       );
 
       setError("");
+
 
       await fetchAdminData();
 
@@ -178,21 +235,27 @@ function AdminDashboard() {
   // SUSPEND PROVIDER
   // ======================================
 
-  async function suspendProvider(providerId) {
-    const notes = window.prompt(
-      "Why is this provider being suspended?"
-    );
+  async function suspendProvider(
+    providerId
+  ) {
+    const notes =
+      window.prompt(
+        "Why is this provider being suspended?"
+      );
+
 
     if (notes === null) {
       return;
     }
 
+
     try {
       const token =
         localStorage.getItem("token");
 
-      await axios.patch(
-        `http://localhost:3001/api/admin/providers/${providerId}/suspend`,
+
+      await api.patch(
+        `/api/admin/providers/${providerId}/suspend`,
         {
           notes,
         },
@@ -204,11 +267,13 @@ function AdminDashboard() {
         }
       );
 
+
       setMessage(
         "Provider suspended successfully."
       );
 
       setError("");
+
 
       await fetchAdminData();
 
@@ -227,13 +292,16 @@ function AdminDashboard() {
   // DEACTIVATE USER
   // ======================================
 
-  async function deactivateUser(userId) {
+  async function deactivateUser(
+    userId
+  ) {
     try {
       const token =
         localStorage.getItem("token");
 
-      await axios.patch(
-        `http://localhost:3001/api/admin/users/${userId}/deactivate`,
+
+      await api.patch(
+        `/api/admin/users/${userId}/deactivate`,
         {},
         {
           headers: {
@@ -243,11 +311,13 @@ function AdminDashboard() {
         }
       );
 
+
       setMessage(
         "User account deactivated."
       );
 
       setError("");
+
 
       await fetchAdminData();
 
@@ -266,13 +336,16 @@ function AdminDashboard() {
   // REACTIVATE USER
   // ======================================
 
-  async function reactivateUser(userId) {
+  async function reactivateUser(
+    userId
+  ) {
     try {
       const token =
         localStorage.getItem("token");
 
-      await axios.patch(
-        `http://localhost:3001/api/admin/users/${userId}/reactivate`,
+
+      await api.patch(
+        `/api/admin/users/${userId}/reactivate`,
         {},
         {
           headers: {
@@ -282,11 +355,13 @@ function AdminDashboard() {
         }
       );
 
+
       setMessage(
         "User account reactivated."
       );
 
       setError("");
+
 
       await fetchAdminData();
 
@@ -317,9 +392,9 @@ function AdminDashboard() {
   return (
     <div className="dashboard-page">
 
-      {/* ======================================
+      {/* ==================================
           PAGE HEADER
-          ====================================== */}
+          ================================== */}
 
       <div className="dashboard-header">
 
@@ -332,16 +407,16 @@ function AdminDashboard() {
         </h1>
 
         <p>
-          Manage BeautyBar users and provider
-          verification.
+          Manage BeautyBar users and
+          provider verification.
         </p>
 
       </div>
 
 
-      {/* ======================================
+      {/* ==================================
           MESSAGES
-          ====================================== */}
+          ================================== */}
 
       {message && (
         <div className="success-message">
@@ -357,9 +432,9 @@ function AdminDashboard() {
       )}
 
 
-      {/* ======================================
+      {/* ==================================
           PROVIDER MANAGEMENT
-          ====================================== */}
+          ================================== */}
 
       <section className="management-card">
 
@@ -382,47 +457,75 @@ function AdminDashboard() {
                   key={provider.id}
                 >
 
+                  {/* ------------------------
+                      PROVIDER INFORMATION
+                      ------------------------ */}
+
                   <div className="admin-item-info">
 
                     <h3>
                       {provider.business_name}
                     </h3>
 
+
                     <p>
                       {provider.first_name}{" "}
                       {provider.last_name}
                     </p>
 
+
                     <p>
                       {provider.email}
                     </p>
 
+
                     <p>
                       {provider.location}
                     </p>
+
+
+                    {/* Verification status badge. */}
 
                     <span
                       className={
                         `verification-badge verification-${provider.verification_status}`
                       }
                     >
-                      {provider.verification_status}
+                      {
+                        provider.verification_status
+                      }
                     </span>
+
+
+                    {/* Admin verification notes. */}
 
                     {provider.verification_notes && (
                       <p className="admin-notes">
+
                         Notes:{" "}
-                        {provider.verification_notes}
+
+                        {
+                          provider.verification_notes
+                        }
+
                       </p>
                     )}
 
                   </div>
 
 
+                  {/* ------------------------
+                      PROVIDER ACTIONS
+                      ------------------------ */}
+
                   <div className="admin-actions">
+
+                    {/* Show verify button unless
+                        provider is already verified. */}
 
                     {provider.verification_status !==
                       "verified" && (
+
                       <button
                         type="button"
                         onClick={() =>
@@ -433,6 +536,7 @@ function AdminDashboard() {
                       >
                         Verify
                       </button>
+
                     )}
 
 
@@ -473,9 +577,9 @@ function AdminDashboard() {
       </section>
 
 
-      {/* ======================================
+      {/* ==================================
           USER MANAGEMENT
-          ====================================== */}
+          ================================== */}
 
       <section className="management-card">
 
@@ -498,24 +602,36 @@ function AdminDashboard() {
                   key={user.id}
                 >
 
+                  {/* ------------------------
+                      USER INFORMATION
+                      ------------------------ */}
+
                   <div className="admin-item-info">
 
                     <h3>
+
                       {user.first_name}{" "}
                       {user.last_name}
+
                     </h3>
+
 
                     <p>
                       @{user.username}
                     </p>
 
+
                     <p>
                       {user.email}
                     </p>
 
+
                     <p className="admin-role">
                       Role: {user.role}
                     </p>
+
+
+                    {/* Active/inactive badge. */}
 
                     <span
                       className={
@@ -524,21 +640,30 @@ function AdminDashboard() {
                           : "account-badge account-inactive"
                       }
                     >
+
                       {user.is_active
                         ? "Active"
                         : "Inactive"}
+
                     </span>
 
                   </div>
 
 
-                  {/* Prevent admin accounts from
-                      being changed here. */}
+                  {/* ------------------------
+                      USER ACTIONS
+                      ------------------------
+                      
+                      Admin accounts are not
+                      given deactivate/reactivate
+                      controls here.
+                  */}
 
                   {user.role !== "admin" && (
                     <div className="admin-actions">
 
                       {user.is_active ? (
+
                         <button
                           type="button"
                           className="danger-button"
@@ -550,7 +675,9 @@ function AdminDashboard() {
                         >
                           Deactivate
                         </button>
+
                       ) : (
+
                         <button
                           type="button"
                           onClick={() =>
@@ -561,6 +688,7 @@ function AdminDashboard() {
                         >
                           Reactivate
                         </button>
+
                       )}
 
                     </div>
@@ -578,5 +706,6 @@ function AdminDashboard() {
     </div>
   );
 }
+
 
 export default AdminDashboard;

@@ -14,7 +14,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import api from "../api";
 
 
 // ======================================
@@ -319,8 +319,8 @@ function ProviderDetailsPage() {
       try {
         // Provider profile + services
         const providerResponse =
-          await axios.get(
-            `http://localhost:3001/api/providers/${id}`
+          await api.get(
+            `/api/providers/${id}`
           );
 
         setProvider(
@@ -330,8 +330,8 @@ function ProviderDetailsPage() {
 
         // Availability
         const availabilityResponse =
-          await axios.get(
-            `http://localhost:3001/api/providers/${id}/availability`
+          await api.get(
+            `/api/providers/${id}/availability`
           );
 
         setAvailability(
@@ -341,8 +341,8 @@ function ProviderDetailsPage() {
 
         // Reviews
         const reviewsResponse =
-          await axios.get(
-            `http://localhost:3001/api/reviews/provider/${id}`
+          await api.get(
+            `/api/reviews/provider/${id}`
           );
 
         setReviews(
@@ -381,8 +381,8 @@ function ProviderDetailsPage() {
           localStorage.getItem("token");
 
         const response =
-          await axios.get(
-            "http://localhost:3001/api/favorites",
+          await api.get(
+            "/api/favorites",
             {
               headers: {
                 Authorization:
@@ -424,8 +424,8 @@ function ProviderDetailsPage() {
 
       try {
         const response =
-          await axios.get(
-            `http://localhost:3001/api/providers/${id}/booked`,
+          await api.get(
+            `/api/providers/${id}/booked`,
             {
               params: {
                 date: appointmentDate,
@@ -458,8 +458,8 @@ function ProviderDetailsPage() {
       const token =
         localStorage.getItem("token");
 
-      await axios.post(
-        `http://localhost:3001/api/favorites/${id}`,
+      await api.post(
+        `/api/favorites/${id}`,
         {},
         {
           headers: {
@@ -488,8 +488,8 @@ function ProviderDetailsPage() {
       const token =
         localStorage.getItem("token");
 
-      await axios.delete(
-        `http://localhost:3001/api/favorites/${id}`,
+      await api.delete(
+        `/api/favorites/${id}`,
         {
           headers: {
             Authorization:
@@ -526,8 +526,8 @@ function ProviderDetailsPage() {
       const token =
         localStorage.getItem("token");
 
-      await axios.post(
-        "http://localhost:3001/api/appointments",
+      await api.post(
+        "/api/appointments",
         {
           provider_id:
             Number(id),
@@ -558,8 +558,8 @@ function ProviderDetailsPage() {
       // newly occupied time disappears.
       try {
         const bookedResponse =
-          await axios.get(
-            `http://localhost:3001/api/providers/${id}/booked`,
+          await api.get(
+            `/api/providers/${id}/booked`,
             {
               params: {
                 date: appointmentDate,

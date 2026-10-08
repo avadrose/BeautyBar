@@ -1,37 +1,66 @@
 // ManageAvailabilityPage.jsx
 //
-// Provider availability management page.
+// Allows providers to manage the dates and
+// times clients can use for booking.
 //
 // Providers can:
-// - add availability blocks
+// - add availability
 // - edit availability
 // - delete availability
 
-import { useEffect, useState } from "react";
-import axios from "axios";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import api from "../api";
+
 
 function ManageAvailabilityPage() {
   // ======================================
   // AVAILABILITY DATA
   // ======================================
 
-  const [availability, setAvailability] = useState([]);
+  const [
+    availability,
+    setAvailability,
+  ] = useState([]);
 
-  const [formData, setFormData] = useState({
+
+  // ======================================
+  // FORM STATE
+  // ======================================
+
+  const [
+    formData,
+    setFormData,
+  ] = useState({
     date: "",
     start_time: "",
     end_time: "",
   });
 
-  const [editingId, setEditingId] = useState(null);
+
+  // Null means creating a new block.
+  // An ID means editing an existing block.
+  const [
+    editingId,
+    setEditingId,
+  ] = useState(null);
+
 
   // ======================================
   // PAGE STATE
   // ======================================
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
+
+  const [message, setMessage] =
+    useState("");
 
 
   // ======================================
@@ -43,9 +72,10 @@ function ManageAvailabilityPage() {
       const token =
         localStorage.getItem("token");
 
+
       const response =
-        await axios.get(
-          "http://localhost:3001/api/availability/mine",
+        await api.get(
+          "/api/availability/mine",
           {
             headers: {
               Authorization:
@@ -54,7 +84,11 @@ function ManageAvailabilityPage() {
           }
         );
 
-      setAvailability(response.data);
+
+      setAvailability(
+        response.data
+      );
+
       setError("");
 
     } catch (err) {
@@ -77,11 +111,15 @@ function ManageAvailabilityPage() {
 
 
   // ======================================
-  // FORM CHANGES
+  // HANDLE INPUT
   // ======================================
 
   function handleChange(event) {
-    const { name, value } = event.target;
+    const {
+      name,
+      value,
+    } = event.target;
+
 
     setFormData((current) => ({
       ...current,
@@ -106,7 +144,7 @@ function ManageAvailabilityPage() {
 
 
   // ======================================
-  // ADD / EDIT AVAILABILITY
+  // CREATE OR EDIT AVAILABILITY
   // ======================================
 
   async function handleSubmit(event) {
@@ -115,14 +153,16 @@ function ManageAvailabilityPage() {
     setMessage("");
     setError("");
 
+
     try {
       const token =
         localStorage.getItem("token");
 
 
+      // Edit an existing availability block.
       if (editingId) {
-        await axios.patch(
-          `http://localhost:3001/api/availability/${editingId}`,
+        await api.patch(
+          `/api/availability/${editingId}`,
           formData,
           {
             headers: {
@@ -131,14 +171,17 @@ function ManageAvailabilityPage() {
             },
           }
         );
+
 
         setMessage(
           "Availability updated successfully."
         );
 
+
+      // Create a new availability block.
       } else {
-        await axios.post(
-          "http://localhost:3001/api/availability",
+        await api.post(
+          "/api/availability",
           formData,
           {
             headers: {
@@ -147,6 +190,7 @@ function ManageAvailabilityPage() {
             },
           }
         );
+
 
         setMessage(
           "Availability added successfully."
@@ -155,6 +199,7 @@ function ManageAvailabilityPage() {
 
 
       resetForm();
+
       await fetchAvailability();
 
     } catch (err) {
@@ -169,19 +214,28 @@ function ManageAvailabilityPage() {
 
 
   // ======================================
-  // EDIT AVAILABILITY
+  // START EDITING
   // ======================================
 
   function startEditing(block) {
-    setEditingId(block.id);
+    setEditingId(
+      block.id
+    );
 
+
+    // PostgreSQL may return seconds,
+    // so only use HH:MM in the time inputs.
     setFormData({
-      date: block.date.slice(0, 10),
+      date:
+        block.date.slice(0, 10),
+
       start_time:
         block.start_time.slice(0, 5),
+
       end_time:
         block.end_time.slice(0, 5),
     });
+
 
     window.scrollTo({
       top: 0,
@@ -194,13 +248,16 @@ function ManageAvailabilityPage() {
   // DELETE AVAILABILITY
   // ======================================
 
-  async function deleteAvailability(id) {
+  async function deleteAvailability(
+    id
+  ) {
     try {
       const token =
         localStorage.getItem("token");
 
-      await axios.delete(
-        `http://localhost:3001/api/availability/${id}`,
+
+      await api.delete(
+        `/api/availability/${id}`,
         {
           headers: {
             Authorization:
@@ -209,11 +266,13 @@ function ManageAvailabilityPage() {
         }
       );
 
+
       setMessage(
         "Availability deleted successfully."
       );
 
       setError("");
+
 
       await fetchAvailability();
 
@@ -228,6 +287,10 @@ function ManageAvailabilityPage() {
   }
 
 
+  // ======================================
+  // LOADING
+  // ======================================
+
   if (loading) {
     return (
       <div className="page-message">
@@ -239,6 +302,10 @@ function ManageAvailabilityPage() {
 
   return (
     <div className="dashboard-page">
+
+      {/* ==================================
+          PAGE HEADER
+          ================================== */}
 
       <div className="dashboard-header">
 
@@ -258,6 +325,10 @@ function ManageAvailabilityPage() {
       </div>
 
 
+      {/* ==================================
+          MESSAGES
+          ================================== */}
+
       {message && (
         <div className="success-message">
           {message}
@@ -272,16 +343,18 @@ function ManageAvailabilityPage() {
       )}
 
 
-      {/* ======================================
+      {/* ==================================
           AVAILABILITY FORM
-          ====================================== */}
+          ================================== */}
 
       <section className="management-card">
 
         <h2>
+
           {editingId
             ? "Edit Availability"
             : "Add Availability"}
+
         </h2>
 
 
@@ -291,6 +364,7 @@ function ManageAvailabilityPage() {
         >
 
           <div>
+
             <label htmlFor="date">
               Date
             </label>
@@ -303,12 +377,14 @@ function ManageAvailabilityPage() {
               onChange={handleChange}
               required
             />
+
           </div>
 
 
           <div className="management-grid">
 
             <div>
+
               <label htmlFor="start_time">
                 Start Time
               </label>
@@ -317,14 +393,18 @@ function ManageAvailabilityPage() {
                 id="start_time"
                 name="start_time"
                 type="time"
-                value={formData.start_time}
+                value={
+                  formData.start_time
+                }
                 onChange={handleChange}
                 required
               />
+
             </div>
 
 
             <div>
+
               <label htmlFor="end_time">
                 End Time
               </label>
@@ -333,10 +413,13 @@ function ManageAvailabilityPage() {
                 id="end_time"
                 name="end_time"
                 type="time"
-                value={formData.end_time}
+                value={
+                  formData.end_time
+                }
                 onChange={handleChange}
                 required
               />
+
             </div>
 
           </div>
@@ -345,9 +428,11 @@ function ManageAvailabilityPage() {
           <div className="management-form-actions">
 
             <button type="submit">
+
               {editingId
                 ? "Save Changes"
                 : "Add Availability"}
+
             </button>
 
 
@@ -368,9 +453,9 @@ function ManageAvailabilityPage() {
       </section>
 
 
-      {/* ======================================
-          AVAILABILITY LIST
-          ====================================== */}
+      {/* ==================================
+          CURRENT AVAILABILITY
+          ================================== */}
 
       <section className="management-card">
 
@@ -386,55 +471,72 @@ function ManageAvailabilityPage() {
         ) : (
           <div className="management-list">
 
-            {availability.map((block) => (
-              <article
-                className="management-item"
-                key={block.id}
-              >
+            {availability.map(
+              (block) => (
+                <article
+                  className="management-item"
+                  key={block.id}
+                >
 
-                <div>
+                  <div>
 
-                  <h3>
-                    {block.date.slice(0, 10)}
-                  </h3>
+                    <h3>
+                      {block.date.slice(
+                        0,
+                        10
+                      )}
+                    </h3>
 
-                  <p className="management-meta">
-                    {block.start_time.slice(0, 5)}
-                    {" - "}
-                    {block.end_time.slice(0, 5)}
-                  </p>
+                    <p className="management-meta">
 
-                </div>
+                      {block.start_time.slice(
+                        0,
+                        5
+                      )}
 
+                      {" - "}
 
-                <div className="management-item-actions">
+                      {block.end_time.slice(
+                        0,
+                        5
+                      )}
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      startEditing(block)
-                    }
-                  >
-                    Edit
-                  </button>
+                    </p>
+
+                  </div>
 
 
-                  <button
-                    type="button"
-                    className="danger-button"
-                    onClick={() =>
-                      deleteAvailability(
-                        block.id
-                      )
-                    }
-                  >
-                    Delete
-                  </button>
+                  <div className="management-item-actions">
 
-                </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        startEditing(
+                          block
+                        )
+                      }
+                    >
+                      Edit
+                    </button>
 
-              </article>
-            ))}
+
+                    <button
+                      type="button"
+                      className="danger-button"
+                      onClick={() =>
+                        deleteAvailability(
+                          block.id
+                        )
+                      }
+                    >
+                      Delete
+                    </button>
+
+                  </div>
+
+                </article>
+              )
+            )}
 
           </div>
         )}
@@ -444,5 +546,6 @@ function ManageAvailabilityPage() {
     </div>
   );
 }
+
 
 export default ManageAvailabilityPage;

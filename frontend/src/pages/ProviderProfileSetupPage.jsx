@@ -1,19 +1,36 @@
 // ProviderProfileSetupPage.jsx
-// Lets a newly registered provider create their
-// BeautyBar business profile.
 //
-// New provider flow:
-// Register
-// → Create provider profile
-// → Profile starts as "pending"
-// → Admin reviews and verifies provider
-// → Provider becomes publicly bookable
+// New beauty professionals use this page
+// after registration.
+//
+// The provider creates:
+//
+// - business name
+// - location
+// - bio
+//
+// New provider profiles are created with
+// pending verification status.
+//
+// An admin must verify the provider before
+// the profile becomes publicly bookable.
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import {
+  useState,
+} from "react";
+
+import {
+  useNavigate,
+} from "react-router-dom";
+
+import api from "../api";
+
 
 function ProviderProfileSetupPage() {
+  const navigate =
+    useNavigate();
+
+
   // ======================================
   // FORM STATE
   // ======================================
@@ -24,27 +41,25 @@ function ProviderProfileSetupPage() {
   ] = useState("");
 
   const [
-    bio,
-    setBio,
-  ] = useState("");
-
-  const [
     location,
     setLocation,
   ] = useState("");
 
-  // Stores error/success messages.
   const [
-    error,
-    setError,
+    bio,
+    setBio,
   ] = useState("");
 
-  const [
-    loading,
-    setLoading,
-  ] = useState(false);
 
-  const navigate = useNavigate();
+  // ======================================
+  // PAGE STATE
+  // ======================================
+
+  const [error, setError] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(false);
 
 
   // ======================================
@@ -52,30 +67,27 @@ function ProviderProfileSetupPage() {
   // ======================================
 
   async function handleSubmit(event) {
-    // Stop the browser from refreshing
-    // when the form is submitted.
     event.preventDefault();
 
     setError("");
     setLoading(true);
 
+
     try {
-      // Get the JWT created during registration/login.
       const token =
         localStorage.getItem("token");
 
 
-      // Send provider profile information
-      // to our protected backend route.
-      await axios.post(
-        "http://localhost:3001/api/provider-profile",
-
+      await api.post(
+        "/api/provider-profile",
         {
-          business_name: businessName,
-          bio,
-          location,
-        },
+          business_name:
+            businessName,
 
+          location,
+
+          bio,
+        },
         {
           headers: {
             Authorization:
@@ -85,9 +97,11 @@ function ProviderProfileSetupPage() {
       );
 
 
-      // After creating the profile,
-      // send provider to their dashboard.
-      navigate("/provider-dashboard");
+      // Profile was created.
+      // Provider can now use dashboard tools.
+      navigate(
+        "/provider-dashboard"
+      );
 
     } catch (err) {
       console.error(err);
@@ -107,31 +121,34 @@ function ProviderProfileSetupPage() {
     <div>
 
       <h1>
-        Create Your Provider Profile
+        Create Provider Profile
       </h1>
 
+
       <p>
-        Tell clients about your beauty business.
-        Your profile will be reviewed before it
-        becomes publicly bookable.
+        Your profile will be submitted
+        for admin verification before
+        becoming publicly bookable.
       </p>
 
 
-      {/* Show backend/frontend error */}
       {error && (
-        <p>
+        <div className="error-message">
           {error}
-        </p>
+        </div>
       )}
 
 
-      <form onSubmit={handleSubmit}>
+      {/* ==================================
+          PROFILE FORM
+          ================================== */}
 
-        {/* ==================================
-            BUSINESS NAME
-            ================================== */}
+      <form
+        onSubmit={handleSubmit}
+      >
 
         <div>
+
           <label htmlFor="business-name">
             Business Name
           </label>
@@ -139,27 +156,20 @@ function ProviderProfileSetupPage() {
           <input
             id="business-name"
             type="text"
-
-            value={
-              businessName
-            }
-
+            value={businessName}
             onChange={(event) =>
               setBusinessName(
                 event.target.value
               )
             }
-
             required
           />
+
         </div>
 
 
-        {/* ==================================
-            LOCATION
-            ================================== */}
-
         <div>
+
           <label htmlFor="location">
             Location
           </label>
@@ -167,48 +177,33 @@ function ProviderProfileSetupPage() {
           <input
             id="location"
             type="text"
-
-            placeholder="Columbus, OH"
-
-            value={
-              location
-            }
-
+            value={location}
             onChange={(event) =>
               setLocation(
                 event.target.value
               )
             }
           />
+
         </div>
 
 
-        {/* ==================================
-            BIO
-            ================================== */}
-
         <div>
+
           <label htmlFor="bio">
-            About Your Business
+            Bio
           </label>
 
           <textarea
             id="bio"
-
-            placeholder="Tell clients about your services, experience, specialties, or style."
-
-            value={
-              bio
-            }
-
+            value={bio}
             onChange={(event) =>
               setBio(
                 event.target.value
               )
             }
-
-            rows="6"
           />
+
         </div>
 
 
@@ -217,8 +212,8 @@ function ProviderProfileSetupPage() {
           disabled={loading}
         >
           {loading
-            ? "Creating Profile..."
-            : "Create Provider Profile"}
+            ? "Creating..."
+            : "Create Profile"}
         </button>
 
       </form>
@@ -226,5 +221,6 @@ function ProviderProfileSetupPage() {
     </div>
   );
 }
+
 
 export default ProviderProfileSetupPage;

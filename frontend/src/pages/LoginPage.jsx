@@ -1,22 +1,51 @@
 // LoginPage.jsx
-// Handles user login for clients, providers, and admins.
+//
+// Handles login for all BeautyBar account types.
+//
+// A successful login:
+// - stores the JWT token
+// - stores basic user information
+// - redirects the user based on their role
+//
+// Roles:
+// - client
+// - provider
+// - admin
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+
+import {
+  Link,
+  useNavigate,
+} from "react-router-dom";
+
+import api from "../api";
+
 
 function LoginPage() {
   const navigate = useNavigate();
+
 
   // ======================================
   // FORM STATE
   // ======================================
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] =
+    useState("");
 
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [password, setPassword] =
+    useState("");
+
+
+  // ======================================
+  // PAGE STATE
+  // ======================================
+
+  const [error, setError] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(false);
 
 
   // ======================================
@@ -30,30 +59,58 @@ function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        "http://localhost:3001/api/auth/login",
-        {
-          username,
-          password,
-        }
+      // Send username/password to backend.
+      const response =
+        await api.post(
+          "/api/auth/login",
+          {
+            username,
+            password,
+          }
+        );
+
+
+      const {
+        token,
+        user,
+      } = response.data;
+
+
+      // ==================================
+      // SAVE LOGIN INFORMATION
+      // ==================================
+      //
+      // Token is used for authenticated API
+      // requests.
+      //
+      // User is used by the frontend to know
+      // which role is logged in.
+
+      localStorage.setItem(
+        "token",
+        token
       );
 
-      const { token, user } = response.data;
-
-      // Save login information so protected
-      // routes can recognize the user.
-      localStorage.setItem("token", token);
       localStorage.setItem(
         "user",
         JSON.stringify(user)
       );
 
 
-      // Redirect based on account role.
+      // ==================================
+      // REDIRECT BASED ON ROLE
+      // ==================================
+
       if (user.role === "admin") {
         navigate("/admin");
-      } else if (user.role === "provider") {
-        navigate("/provider-dashboard");
+
+      } else if (
+        user.role === "provider"
+      ) {
+        navigate(
+          "/provider-dashboard"
+        );
+
       } else {
         navigate("/providers");
       }
@@ -77,9 +134,9 @@ function LoginPage() {
 
       <div className="auth-card">
 
-        {/* ======================================
-            HEADER
-            ====================================== */}
+        {/* ==================================
+            PAGE HEADER
+            ================================== */}
 
         <div className="auth-header">
 
@@ -99,9 +156,9 @@ function LoginPage() {
         </div>
 
 
-        {/* ======================================
+        {/* ==================================
             ERROR MESSAGE
-            ====================================== */}
+            ================================== */}
 
         {error && (
           <div className="error-message">
@@ -110,9 +167,9 @@ function LoginPage() {
         )}
 
 
-        {/* ======================================
+        {/* ==================================
             LOGIN FORM
-            ====================================== */}
+            ================================== */}
 
         <form
           className="auth-form"
@@ -120,6 +177,7 @@ function LoginPage() {
         >
 
           <div>
+
             <label htmlFor="username">
               Username
             </label>
@@ -136,10 +194,12 @@ function LoginPage() {
               autoComplete="username"
               required
             />
+
           </div>
 
 
           <div>
+
             <label htmlFor="password">
               Password
             </label>
@@ -156,6 +216,7 @@ function LoginPage() {
               autoComplete="current-password"
               required
             />
+
           </div>
 
 
@@ -172,15 +233,18 @@ function LoginPage() {
         </form>
 
 
-        {/* ======================================
+        {/* ==================================
             REGISTER LINK
-            ====================================== */}
+            ================================== */}
 
         <p className="auth-footer">
+
           Don&apos;t have an account?{" "}
+
           <Link to="/register">
             Create one
           </Link>
+
         </p>
 
       </div>
@@ -188,5 +252,6 @@ function LoginPage() {
     </div>
   );
 }
+
 
 export default LoginPage;

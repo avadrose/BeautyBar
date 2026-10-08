@@ -3,34 +3,50 @@
 // Client appointment management page.
 //
 // Clients can:
-// - view their appointments
+// - view appointments
+// - see provider/service details
 // - cancel scheduled appointments
 // - reschedule scheduled appointments
-//
-// This version keeps the existing functionality
-// but gives the page a cleaner BeautyBar layout.
 
-import { useEffect, useState } from "react";
-import axios from "axios";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import api from "../api";
+
 
 function ClientDashboard() {
   // ======================================
   // APPOINTMENT DATA
   // ======================================
 
-  const [appointments, setAppointments] = useState([]);
+  const [
+    appointments,
+    setAppointments,
+  ] = useState([]);
 
-  // Stores reschedule form values separately
-  // for each appointment.
-  const [rescheduleData, setRescheduleData] = useState({});
+
+  // Stores separate reschedule form
+  // values for each appointment ID.
+  const [
+    rescheduleData,
+    setRescheduleData,
+  ] = useState({});
+
 
   // ======================================
   // PAGE STATE
   // ======================================
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
+
+  const [message, setMessage] =
+    useState("");
 
 
   // ======================================
@@ -42,9 +58,10 @@ function ClientDashboard() {
       const token =
         localStorage.getItem("token");
 
+
       const response =
-        await axios.get(
-          "http://localhost:3001/api/appointments/mine",
+        await api.get(
+          "/api/appointments/mine",
           {
             headers: {
               Authorization:
@@ -53,7 +70,11 @@ function ClientDashboard() {
           }
         );
 
-      setAppointments(response.data);
+
+      setAppointments(
+        response.data
+      );
+
       setError("");
 
     } catch (err) {
@@ -86,8 +107,9 @@ function ClientDashboard() {
       const token =
         localStorage.getItem("token");
 
-      await axios.patch(
-        `http://localhost:3001/api/appointments/${appointmentId}/cancel`,
+
+      await api.patch(
+        `/api/appointments/${appointmentId}/cancel`,
         {},
         {
           headers: {
@@ -97,13 +119,15 @@ function ClientDashboard() {
         }
       );
 
+
       setMessage(
         "Appointment cancelled successfully."
       );
 
       setError("");
 
-      // Reload appointments so the new
+
+      // Reload appointments so the updated
       // status appears immediately.
       await fetchAppointments();
 
@@ -127,14 +151,19 @@ function ClientDashboard() {
     field,
     value
   ) {
-    setRescheduleData((current) => ({
-      ...current,
+    setRescheduleData(
+      (current) => ({
+        ...current,
 
-      [appointmentId]: {
-        ...current[appointmentId],
-        [field]: value,
-      },
-    }));
+        [appointmentId]: {
+          ...current[
+            appointmentId
+          ],
+
+          [field]: value,
+        },
+      })
+    );
   }
 
 
@@ -146,8 +175,12 @@ function ClientDashboard() {
     appointmentId
   ) {
     const data =
-      rescheduleData[appointmentId];
+      rescheduleData[
+        appointmentId
+      ];
 
+
+    // Both fields are required.
     if (
       !data?.appointment_date ||
       !data?.appointment_time
@@ -159,12 +192,14 @@ function ClientDashboard() {
       return;
     }
 
+
     try {
       const token =
         localStorage.getItem("token");
 
-      await axios.patch(
-        `http://localhost:3001/api/appointments/${appointmentId}/reschedule`,
+
+      await api.patch(
+        `/api/appointments/${appointmentId}/reschedule`,
         {
           appointment_date:
             data.appointment_date,
@@ -180,22 +215,29 @@ function ClientDashboard() {
         }
       );
 
+
       setMessage(
         "Appointment rescheduled successfully."
       );
 
       setError("");
 
-      // Clear this appointment's reschedule form.
-      setRescheduleData((current) => {
-        const updated = {
-          ...current,
-        };
 
-        delete updated[appointmentId];
+      // Clear the form for this appointment.
+      setRescheduleData(
+        (current) => {
+          const updated = {
+            ...current,
+          };
 
-        return updated;
-      });
+          delete updated[
+            appointmentId
+          ];
+
+          return updated;
+        }
+      );
+
 
       await fetchAppointments();
 
@@ -211,11 +253,14 @@ function ClientDashboard() {
 
 
   // ======================================
-  // FORMAT TIME
+  // FORMAT TIME FOR DISPLAY
   // ======================================
 
   function formatTime(time) {
-    if (!time) return "";
+    if (!time) {
+      return "";
+    }
+
 
     const [hours, minutes] =
       time
@@ -223,10 +268,12 @@ function ClientDashboard() {
         .split(":")
         .map(Number);
 
+
     const date = new Date();
 
     date.setHours(hours);
     date.setMinutes(minutes);
+
 
     return date.toLocaleTimeString(
       [],
@@ -239,7 +286,7 @@ function ClientDashboard() {
 
 
   // ======================================
-  // LOADING STATE
+  // LOADING
   // ======================================
 
   if (loading) {
@@ -254,9 +301,9 @@ function ClientDashboard() {
   return (
     <div className="dashboard-page">
 
-      {/* ======================================
-          PAGE HEADER
-          ====================================== */}
+      {/* ==================================
+          HEADER
+          ================================== */}
 
       <div className="dashboard-header">
 
@@ -276,9 +323,9 @@ function ClientDashboard() {
       </div>
 
 
-      {/* ======================================
-          PAGE MESSAGES
-          ====================================== */}
+      {/* ==================================
+          MESSAGES
+          ================================== */}
 
       {message && (
         <div className="success-message">
@@ -294,9 +341,9 @@ function ClientDashboard() {
       )}
 
 
-      {/* ======================================
-          EMPTY STATE
-          ====================================== */}
+      {/* ==================================
+          APPOINTMENT LIST
+          ================================== */}
 
       {appointments.length === 0 ? (
         <div className="dashboard-empty-state">
@@ -306,17 +353,13 @@ function ClientDashboard() {
           </h2>
 
           <p>
-            Browse BeautyBar providers and book
-            your first appointment.
+            Browse BeautyBar providers and
+            book your first appointment.
           </p>
 
         </div>
       ) : (
         <div className="appointment-card-list">
-
-          {/* ==================================
-              APPOINTMENT CARDS
-              ================================== */}
 
           {appointments.map(
             (appointment) => (
@@ -325,7 +368,9 @@ function ClientDashboard() {
                 key={appointment.id}
               >
 
-                {/* CARD HEADER */}
+                {/* --------------------------
+                    CARD HEADER
+                    -------------------------- */}
 
                 <div className="appointment-card-header">
 
@@ -353,13 +398,14 @@ function ClientDashboard() {
                 </div>
 
 
-                {/* ==================================
+                {/* --------------------------
                     APPOINTMENT DETAILS
-                    ================================== */}
+                    -------------------------- */}
 
                 <div className="appointment-details-grid">
 
                   <div>
+
                     <span className="detail-label">
                       Date
                     </span>
@@ -368,10 +414,12 @@ function ClientDashboard() {
                       {appointment.appointment_date
                         .slice(0, 10)}
                     </strong>
+
                   </div>
 
 
                   <div>
+
                     <span className="detail-label">
                       Time
                     </span>
@@ -381,21 +429,26 @@ function ClientDashboard() {
                         appointment.appointment_time
                       )}
                     </strong>
+
                   </div>
 
 
                   <div>
+
                     <span className="detail-label">
                       Duration
                     </span>
 
                     <strong>
-                      {appointment.duration} minutes
+                      {appointment.duration}
+                      {" "}minutes
                     </strong>
+
                   </div>
 
 
                   <div>
+
                     <span className="detail-label">
                       Price
                     </span>
@@ -403,10 +456,12 @@ function ClientDashboard() {
                     <strong>
                       ${appointment.price}
                     </strong>
+
                   </div>
 
 
                   <div>
+
                     <span className="detail-label">
                       Location
                     </span>
@@ -414,21 +469,20 @@ function ClientDashboard() {
                     <strong>
                       {appointment.location}
                     </strong>
+
                   </div>
 
                 </div>
 
 
-                {/* ==================================
-                    SCHEDULED APPOINTMENT ACTIONS
-                    ================================== */}
+                {/* --------------------------
+                    ACTIONS
+                    -------------------------- */}
 
                 {appointment.status ===
                   "scheduled" && (
 
                   <div className="appointment-actions">
-
-                    {/* CANCEL */}
 
                     <button
                       type="button"
@@ -443,7 +497,9 @@ function ClientDashboard() {
                     </button>
 
 
-                    {/* RESCHEDULE SECTION */}
+                    {/* ------------------------
+                        RESCHEDULE
+                        ------------------------ */}
 
                     <div className="reschedule-panel">
 
@@ -451,25 +507,23 @@ function ClientDashboard() {
                         Reschedule
                       </h3>
 
+
                       <div className="reschedule-grid">
 
                         <div>
-                          <label
-                            htmlFor={`date-${appointment.id}`}
-                          >
+
+                          <label>
                             New Date
                           </label>
 
                           <input
-                            id={`date-${appointment.id}`}
                             type="date"
-
                             value={
                               rescheduleData[
                                 appointment.id
-                              ]?.appointment_date || ""
+                              ]?.appointment_date ||
+                              ""
                             }
-
                             onChange={(event) =>
                               handleRescheduleChange(
                                 appointment.id,
@@ -478,26 +532,24 @@ function ClientDashboard() {
                               )
                             }
                           />
+
                         </div>
 
 
                         <div>
-                          <label
-                            htmlFor={`time-${appointment.id}`}
-                          >
+
+                          <label>
                             New Time
                           </label>
 
                           <input
-                            id={`time-${appointment.id}`}
                             type="time"
-
                             value={
                               rescheduleData[
                                 appointment.id
-                              ]?.appointment_time || ""
+                              ]?.appointment_time ||
+                              ""
                             }
-
                             onChange={(event) =>
                               handleRescheduleChange(
                                 appointment.id,
@@ -506,6 +558,7 @@ function ClientDashboard() {
                               )
                             }
                           />
+
                         </div>
 
                       </div>
@@ -537,5 +590,6 @@ function ClientDashboard() {
     </div>
   );
 }
+
 
 export default ClientDashboard;

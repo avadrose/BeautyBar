@@ -3,57 +3,102 @@
 // Provider service management page.
 //
 // Providers can:
-// - view their services
-// - add a service
-// - edit an existing service
+// - view current services
+// - create a service
+// - edit a service
 // - delete a service
+//
+// Service information includes:
+// - name
+// - description
+// - price
+// - duration
 
-import { useEffect, useState } from "react";
-import axios from "axios";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import api from "../api";
+
 
 function ManageServicesPage() {
   // ======================================
   // SERVICE DATA
   // ======================================
 
-  const [services, setServices] = useState([]);
+  const [
+    services,
+    setServices,
+  ] = useState([]);
 
-  const [formData, setFormData] = useState({
+
+  // ======================================
+  // FORM DATA
+  // ======================================
+
+  const [
+    formData,
+    setFormData,
+  ] = useState({
     name: "",
     description: "",
     price: "",
     duration: "",
   });
 
-  const [editingId, setEditingId] = useState(null);
+
+  // If editingId is null, the form
+  // creates a new service.
+  //
+  // If it contains an ID, the form
+  // edits an existing service.
+  const [
+    editingId,
+    setEditingId,
+  ] = useState(null);
+
 
   // ======================================
   // PAGE STATE
   // ======================================
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
+
+  const [message, setMessage] =
+    useState("");
 
 
   // ======================================
-  // LOAD PROVIDER SERVICES
+  // LOAD SERVICES
   // ======================================
 
   async function fetchServices() {
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token");
 
-      const response = await axios.get(
-        "http://localhost:3001/api/services/mine",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+
+      const response =
+        await api.get(
+          "/api/services/mine",
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
+
+      setServices(
+        response.data
       );
 
-      setServices(response.data);
       setError("");
 
     } catch (err) {
@@ -80,7 +125,11 @@ function ManageServicesPage() {
   // ======================================
 
   function handleChange(event) {
-    const { name, value } = event.target;
+    const {
+      name,
+      value,
+    } = event.target;
+
 
     setFormData((current) => ({
       ...current,
@@ -106,7 +155,7 @@ function ManageServicesPage() {
 
 
   // ======================================
-  // ADD OR UPDATE SERVICE
+  // CREATE OR UPDATE SERVICE
   // ======================================
 
   async function handleSubmit(event) {
@@ -115,44 +164,66 @@ function ManageServicesPage() {
     setError("");
     setMessage("");
 
-    try {
-      const token = localStorage.getItem("token");
 
+    try {
+      const token =
+        localStorage.getItem("token");
+
+
+      // Convert number fields from strings.
       const payload = {
-        name: formData.name,
-        description: formData.description,
-        price: Number(formData.price),
-        duration: Number(formData.duration),
+        name:
+          formData.name,
+
+        description:
+          formData.description,
+
+        price:
+          Number(formData.price),
+
+        duration:
+          Number(formData.duration),
       };
 
 
-      // Edit existing service.
+      // ==================================
+      // EDIT EXISTING SERVICE
+      // ==================================
+
       if (editingId) {
-        await axios.patch(
-          `http://localhost:3001/api/services/${editingId}`,
+        await api.patch(
+          `/api/services/${editingId}`,
           payload,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization:
+                `Bearer ${token}`,
             },
           }
         );
+
 
         setMessage(
           "Service updated successfully."
         );
 
+
+      // ==================================
+      // CREATE NEW SERVICE
+      // ==================================
+
       } else {
-        // Add new service.
-        await axios.post(
-          "http://localhost:3001/api/services",
+        await api.post(
+          "/api/services",
           payload,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization:
+                `Bearer ${token}`,
             },
           }
         );
+
 
         setMessage(
           "Service added successfully."
@@ -161,6 +232,7 @@ function ManageServicesPage() {
 
 
       resetForm();
+
       await fetchServices();
 
     } catch (err) {
@@ -175,19 +247,31 @@ function ManageServicesPage() {
 
 
   // ======================================
-  // START EDITING A SERVICE
+  // START EDITING
   // ======================================
 
   function startEditing(service) {
-    setEditingId(service.id);
+    setEditingId(
+      service.id
+    );
+
 
     setFormData({
-      name: service.name,
-      description: service.description || "",
-      price: service.price,
-      duration: service.duration,
+      name:
+        service.name,
+
+      description:
+        service.description || "",
+
+      price:
+        service.price,
+
+      duration:
+        service.duration,
     });
 
+
+    // Move user back toward the form.
     window.scrollTo({
       top: 0,
       behavior: "smooth",
@@ -199,24 +283,31 @@ function ManageServicesPage() {
   // DELETE SERVICE
   // ======================================
 
-  async function deleteService(serviceId) {
+  async function deleteService(
+    serviceId
+  ) {
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token");
 
-      await axios.delete(
-        `http://localhost:3001/api/services/${serviceId}`,
+
+      await api.delete(
+        `/api/services/${serviceId}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization:
+              `Bearer ${token}`,
           },
         }
       );
+
 
       setMessage(
         "Service deleted successfully."
       );
 
       setError("");
+
 
       await fetchServices();
 
@@ -231,6 +322,10 @@ function ManageServicesPage() {
   }
 
 
+  // ======================================
+  // LOADING STATE
+  // ======================================
+
   if (loading) {
     return (
       <div className="page-message">
@@ -242,6 +337,10 @@ function ManageServicesPage() {
 
   return (
     <div className="dashboard-page">
+
+      {/* ==================================
+          PAGE HEADER
+          ================================== */}
 
       <div className="dashboard-header">
 
@@ -261,6 +360,10 @@ function ManageServicesPage() {
       </div>
 
 
+      {/* ==================================
+          MESSAGES
+          ================================== */}
+
       {message && (
         <div className="success-message">
           {message}
@@ -275,9 +378,9 @@ function ManageServicesPage() {
       )}
 
 
-      {/* ======================================
+      {/* ==================================
           SERVICE FORM
-          ====================================== */}
+          ================================== */}
 
       <section className="management-card">
 
@@ -287,12 +390,14 @@ function ManageServicesPage() {
             : "Add Service"}
         </h2>
 
+
         <form
           className="management-form"
           onSubmit={handleSubmit}
         >
 
           <div>
+
             <label htmlFor="name">
               Service Name
             </label>
@@ -305,10 +410,12 @@ function ManageServicesPage() {
               onChange={handleChange}
               required
             />
+
           </div>
 
 
           <div>
+
             <label htmlFor="description">
               Description
             </label>
@@ -317,15 +424,19 @@ function ManageServicesPage() {
               id="description"
               name="description"
               rows="4"
-              value={formData.description}
+              value={
+                formData.description
+              }
               onChange={handleChange}
             />
+
           </div>
 
 
           <div className="management-grid">
 
             <div>
+
               <label htmlFor="price">
                 Price
               </label>
@@ -340,10 +451,12 @@ function ManageServicesPage() {
                 onChange={handleChange}
                 required
               />
+
             </div>
 
 
             <div>
+
               <label htmlFor="duration">
                 Duration (minutes)
               </label>
@@ -353,10 +466,13 @@ function ManageServicesPage() {
                 name="duration"
                 type="number"
                 min="1"
-                value={formData.duration}
+                value={
+                  formData.duration
+                }
                 onChange={handleChange}
                 required
               />
+
             </div>
 
           </div>
@@ -365,9 +481,11 @@ function ManageServicesPage() {
           <div className="management-form-actions">
 
             <button type="submit">
+
               {editingId
                 ? "Save Changes"
                 : "Add Service"}
+
             </button>
 
 
@@ -388,9 +506,9 @@ function ManageServicesPage() {
       </section>
 
 
-      {/* ======================================
-          SERVICE LIST
-          ====================================== */}
+      {/* ==================================
+          CURRENT SERVICES
+          ================================== */}
 
       <section className="management-card">
 
@@ -406,56 +524,68 @@ function ManageServicesPage() {
         ) : (
           <div className="management-list">
 
-            {services.map((service) => (
-              <article
-                className="management-item"
-                key={service.id}
-              >
+            {services.map(
+              (service) => (
+                <article
+                  className="management-item"
+                  key={service.id}
+                >
 
-                <div>
+                  <div>
 
-                  <h3>
-                    {service.name}
-                  </h3>
+                    <h3>
+                      {service.name}
+                    </h3>
 
-                  <p>
-                    {service.description}
-                  </p>
+                    <p>
+                      {service.description}
+                    </p>
 
-                  <p className="management-meta">
-                    ${service.price}
-                    {" • "}
-                    {service.duration} minutes
-                  </p>
+                    <p className="management-meta">
 
-                </div>
+                      ${service.price}
+
+                      {" • "}
+
+                      {service.duration}
+                      {" "}minutes
+
+                    </p>
+
+                  </div>
 
 
-                <div className="management-item-actions">
+                  <div className="management-item-actions">
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      startEditing(service)
-                    }
-                  >
-                    Edit
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        startEditing(
+                          service
+                        )
+                      }
+                    >
+                      Edit
+                    </button>
 
-                  <button
-                    type="button"
-                    className="danger-button"
-                    onClick={() =>
-                      deleteService(service.id)
-                    }
-                  >
-                    Delete
-                  </button>
 
-                </div>
+                    <button
+                      type="button"
+                      className="danger-button"
+                      onClick={() =>
+                        deleteService(
+                          service.id
+                        )
+                      }
+                    >
+                      Delete
+                    </button>
 
-              </article>
-            ))}
+                  </div>
+
+                </article>
+              )
+            )}
 
           </div>
         )}
@@ -465,5 +595,6 @@ function ManageServicesPage() {
     </div>
   );
 }
+
 
 export default ManageServicesPage;

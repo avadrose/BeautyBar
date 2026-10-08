@@ -98,6 +98,10 @@ function Navbar() {
           <Link to="/favorites">
             Favorites
           </Link>
+
+          <Link to="/reviews">
+            Reviews
+          </Link>
         </>
       )}
 

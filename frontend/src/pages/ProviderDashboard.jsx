@@ -1,34 +1,45 @@
 // ProviderDashboard.jsx
 //
-// Provider appointment management page.
+// Main appointment page for beauty professionals.
 //
 // Providers can:
-// - view appointments booked with them
-// - see client information
-// - mark appointments completed
-// - cancel appointments
-//
-// This version keeps the existing functionality
-// and gives the page a cleaner BeautyBar design.
+// - view bookings
+// - see client names
+// - see service/date/time
+// - mark an appointment completed
+// - cancel an appointment
 
-import { useEffect, useState } from "react";
-import axios from "axios";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import api from "../api";
+
 
 function ProviderDashboard() {
   // ======================================
   // APPOINTMENT DATA
   // ======================================
 
-  const [appointments, setAppointments] = useState([]);
+  const [
+    appointments,
+    setAppointments,
+  ] = useState([]);
 
 
   // ======================================
   // PAGE STATE
   // ======================================
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
+
+  const [message, setMessage] =
+    useState("");
 
 
   // ======================================
@@ -40,9 +51,10 @@ function ProviderDashboard() {
       const token =
         localStorage.getItem("token");
 
+
       const response =
-        await axios.get(
-          "http://localhost:3001/api/appointments/provider/mine",
+        await api.get(
+          "/api/appointments/provider/mine",
           {
             headers: {
               Authorization:
@@ -51,7 +63,11 @@ function ProviderDashboard() {
           }
         );
 
-      setAppointments(response.data);
+
+      setAppointments(
+        response.data
+      );
+
       setError("");
 
     } catch (err) {
@@ -74,7 +90,7 @@ function ProviderDashboard() {
 
 
   // ======================================
-  // CHANGE APPOINTMENT STATUS
+  // UPDATE APPOINTMENT STATUS
   // ======================================
 
   async function updateAppointmentStatus(
@@ -85,8 +101,9 @@ function ProviderDashboard() {
       const token =
         localStorage.getItem("token");
 
-      await axios.patch(
-        `http://localhost:3001/api/appointments/${appointmentId}/status`,
+
+      await api.patch(
+        `/api/appointments/${appointmentId}/status`,
         {
           status,
         },
@@ -98,14 +115,16 @@ function ProviderDashboard() {
         }
       );
 
+
       setMessage(
         `Appointment marked ${status}.`
       );
 
       setError("");
 
-      // Refresh the appointments so the
-      // updated status appears immediately.
+
+      // Refresh list so new status
+      // appears immediately.
       await fetchAppointments();
 
     } catch (err) {
@@ -124,7 +143,10 @@ function ProviderDashboard() {
   // ======================================
 
   function formatTime(time) {
-    if (!time) return "";
+    if (!time) {
+      return "";
+    }
+
 
     const [hours, minutes] =
       time
@@ -132,10 +154,12 @@ function ProviderDashboard() {
         .split(":")
         .map(Number);
 
+
     const date = new Date();
 
     date.setHours(hours);
     date.setMinutes(minutes);
+
 
     return date.toLocaleTimeString(
       [],
@@ -163,9 +187,9 @@ function ProviderDashboard() {
   return (
     <div className="dashboard-page">
 
-      {/* ======================================
-          PAGE HEADER
-          ====================================== */}
+      {/* ==================================
+          HEADER
+          ================================== */}
 
       <div className="dashboard-header">
 
@@ -178,16 +202,16 @@ function ProviderDashboard() {
         </h1>
 
         <p>
-          Review upcoming client bookings and
-          update appointment statuses.
+          Review upcoming client bookings
+          and update appointment statuses.
         </p>
 
       </div>
 
 
-      {/* ======================================
+      {/* ==================================
           MESSAGES
-          ====================================== */}
+          ================================== */}
 
       {message && (
         <div className="success-message">
@@ -203,9 +227,9 @@ function ProviderDashboard() {
       )}
 
 
-      {/* ======================================
-          EMPTY STATE
-          ====================================== */}
+      {/* ==================================
+          APPOINTMENT LIST
+          ================================== */}
 
       {appointments.length === 0 ? (
         <div className="dashboard-empty-state">
@@ -223,10 +247,6 @@ function ProviderDashboard() {
       ) : (
         <div className="appointment-card-list">
 
-          {/* ==================================
-              PROVIDER APPOINTMENT CARDS
-              ================================== */}
-
           {appointments.map(
             (appointment) => (
               <article
@@ -234,7 +254,9 @@ function ProviderDashboard() {
                 key={appointment.id}
               >
 
-                {/* CARD HEADER */}
+                {/* --------------------------
+                    CLIENT HEADER
+                    -------------------------- */}
 
                 <div className="appointment-card-header">
 
@@ -263,13 +285,14 @@ function ProviderDashboard() {
                 </div>
 
 
-                {/* ==================================
+                {/* --------------------------
                     APPOINTMENT DETAILS
-                    ================================== */}
+                    -------------------------- */}
 
                 <div className="appointment-details-grid">
 
                   <div>
+
                     <span className="detail-label">
                       Service
                     </span>
@@ -277,10 +300,12 @@ function ProviderDashboard() {
                     <strong>
                       {appointment.service_name}
                     </strong>
+
                   </div>
 
 
                   <div>
+
                     <span className="detail-label">
                       Date
                     </span>
@@ -289,10 +314,12 @@ function ProviderDashboard() {
                       {appointment.appointment_date
                         .slice(0, 10)}
                     </strong>
+
                   </div>
 
 
                   <div>
+
                     <span className="detail-label">
                       Time
                     </span>
@@ -302,25 +329,29 @@ function ProviderDashboard() {
                         appointment.appointment_time
                       )}
                     </strong>
+
                   </div>
 
 
                   <div>
+
                     <span className="detail-label">
                       Duration
                     </span>
 
                     <strong>
-                      {appointment.duration} minutes
+                      {appointment.duration}
+                      {" "}minutes
                     </strong>
+
                   </div>
 
                 </div>
 
 
-                {/* ==================================
+                {/* --------------------------
                     PROVIDER ACTIONS
-                    ================================== */}
+                    -------------------------- */}
 
                 {appointment.status ===
                   "scheduled" && (
@@ -329,7 +360,6 @@ function ProviderDashboard() {
 
                     <button
                       type="button"
-
                       onClick={() =>
                         updateAppointmentStatus(
                           appointment.id,
@@ -344,7 +374,6 @@ function ProviderDashboard() {
                     <button
                       type="button"
                       className="danger-button"
-
                       onClick={() =>
                         updateAppointmentStatus(
                           appointment.id,
@@ -368,5 +397,6 @@ function ProviderDashboard() {
     </div>
   );
 }
+
 
 export default ProviderDashboard;

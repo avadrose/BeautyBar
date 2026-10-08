@@ -1,51 +1,86 @@
 // ProvidersPage.jsx
-// Displays verified beauty providers in a polished card layout.
+//
+// Displays all verified BeautyBar providers.
 //
 // Users can:
+// - browse providers
 // - search by provider/business name
 // - filter by location
 // - filter by service
-// - click into a provider profile
+// - view service previews
+// - open the full provider profile
 
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import axios from "axios";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  Link,
+} from "react-router-dom";
+
+import api from "../api";
+
 
 function ProvidersPage() {
   // ======================================
   // PROVIDER DATA
   // ======================================
 
-  const [providers, setProviders] = useState([]);
+  const [
+    providers,
+    setProviders,
+  ] = useState([]);
+
 
   // ======================================
-  // FILTER STATE
+  // SEARCH / FILTER STATE
   // ======================================
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [locationFilter, setLocationFilter] = useState("");
-  const [serviceFilter, setServiceFilter] = useState("");
+  const [
+    searchTerm,
+    setSearchTerm,
+  ] = useState("");
+
+  const [
+    locationFilter,
+    setLocationFilter,
+  ] = useState("");
+
+  const [
+    serviceFilter,
+    setServiceFilter,
+  ] = useState("");
+
 
   // ======================================
   // PAGE STATE
   // ======================================
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
 
 
   // ======================================
-  // LOAD PROVIDERS
+  // LOAD VERIFIED PROVIDERS
   // ======================================
 
   useEffect(() => {
     async function fetchProviders() {
       try {
-        const response = await axios.get(
-          "http://localhost:3001/api/providers"
+        const response =
+          await api.get(
+            "/api/providers"
+          );
+
+        setProviders(
+          response.data
         );
 
-        setProviders(response.data);
         setError("");
 
       } catch (err) {
@@ -67,64 +102,78 @@ function ProvidersPage() {
   // ======================================
   // FILTER PROVIDERS
   // ======================================
+  //
+  // useMemo recalculates the filtered list
+  // only when providers or filter values change.
 
-  const filteredProviders = useMemo(() => {
-    const search =
-      searchTerm.toLowerCase();
+  const filteredProviders =
+    useMemo(() => {
+      const search =
+        searchTerm.toLowerCase();
 
-    const location =
-      locationFilter.toLowerCase();
+      const location =
+        locationFilter.toLowerCase();
 
-    const service =
-      serviceFilter.toLowerCase();
-
-    return providers.filter((provider) => {
-      // Match business name or provider name.
-      const matchesName =
-        !search ||
-        provider.business_name
-          ?.toLowerCase()
-          .includes(search) ||
-        provider.first_name
-          ?.toLowerCase()
-          .includes(search) ||
-        provider.last_name
-          ?.toLowerCase()
-          .includes(search);
+      const service =
+        serviceFilter.toLowerCase();
 
 
-      // Match location.
-      const matchesLocation =
-        !location ||
-        provider.location
-          ?.toLowerCase()
-          .includes(location);
+      return providers.filter(
+        (provider) => {
 
+          // Match business name or
+          // provider first/last name.
+          const matchesName =
+            !search ||
 
-      // Match one of the provider's services.
-      const matchesService =
-        !service ||
-        provider.services?.some(
-          (serviceItem) =>
-            serviceItem.name
+            provider.business_name
               ?.toLowerCase()
-              .includes(service)
-        );
+              .includes(search) ||
+
+            provider.first_name
+              ?.toLowerCase()
+              .includes(search) ||
+
+            provider.last_name
+              ?.toLowerCase()
+              .includes(search);
 
 
-      return (
-        matchesName &&
-        matchesLocation &&
-        matchesService
+          // Match location.
+          const matchesLocation =
+            !location ||
+
+            provider.location
+              ?.toLowerCase()
+              .includes(location);
+
+
+          // Match any service name.
+          const matchesService =
+            !service ||
+
+            provider.services?.some(
+              (serviceItem) =>
+                serviceItem.name
+                  ?.toLowerCase()
+                  .includes(service)
+            );
+
+
+          return (
+            matchesName &&
+            matchesLocation &&
+            matchesService
+          );
+        }
       );
-    });
 
-  }, [
-    providers,
-    searchTerm,
-    locationFilter,
-    serviceFilter,
-  ]);
+    }, [
+      providers,
+      searchTerm,
+      locationFilter,
+      serviceFilter,
+    ]);
 
 
   // ======================================
@@ -139,6 +188,7 @@ function ProvidersPage() {
     );
   }
 
+
   if (error) {
     return (
       <p>
@@ -151,9 +201,9 @@ function ProvidersPage() {
   return (
     <div>
 
-      {/* ======================================
+      {/* ==================================
           PAGE HEADER
-          ====================================== */}
+          ================================== */}
 
       <div className="providers-header">
 
@@ -173,15 +223,16 @@ function ProvidersPage() {
       </div>
 
 
-      {/* ======================================
-          SEARCH / FILTER PANEL
-          ====================================== */}
+      {/* ==================================
+          FILTER PANEL
+          ================================== */}
 
       <section className="provider-filter-panel">
 
         <div className="provider-filter-grid">
 
           <div>
+
             <label htmlFor="provider-search">
               Provider
             </label>
@@ -190,19 +241,19 @@ function ProvidersPage() {
               id="provider-search"
               type="text"
               placeholder="Beauty By Ava"
-
               value={searchTerm}
-
               onChange={(event) =>
                 setSearchTerm(
                   event.target.value
                 )
               }
             />
+
           </div>
 
 
           <div>
+
             <label htmlFor="location-filter">
               Location
             </label>
@@ -211,19 +262,19 @@ function ProvidersPage() {
               id="location-filter"
               type="text"
               placeholder="Columbus, OH"
-
               value={locationFilter}
-
               onChange={(event) =>
                 setLocationFilter(
                   event.target.value
                 )
               }
             />
+
           </div>
 
 
           <div>
+
             <label htmlFor="service-filter">
               Service
             </label>
@@ -232,24 +283,24 @@ function ProvidersPage() {
               id="service-filter"
               type="text"
               placeholder="Nails, hair, waxing..."
-
               value={serviceFilter}
-
               onChange={(event) =>
                 setServiceFilter(
                   event.target.value
                 )
               }
             />
+
           </div>
 
         </div>
 
 
+        {/* Clear all active filters. */}
+
         <button
           type="button"
           className="clear-filter-button"
-
           onClick={() => {
             setSearchTerm("");
             setLocationFilter("");
@@ -262,22 +313,26 @@ function ProvidersPage() {
       </section>
 
 
-      {/* ======================================
+      {/* ==================================
           RESULT COUNT
-          ====================================== */}
+          ================================== */}
 
       <p className="provider-result-count">
+
         {filteredProviders.length} provider
+
         {filteredProviders.length !== 1
           ? "s"
           : ""}{" "}
+
         found
+
       </p>
 
 
-      {/* ======================================
-          NO RESULTS
-          ====================================== */}
+      {/* ==================================
+          EMPTY SEARCH RESULT
+          ================================== */}
 
       {filteredProviders.length === 0 && (
         <div className="empty-state">
@@ -295,9 +350,9 @@ function ProvidersPage() {
       )}
 
 
-      {/* ======================================
+      {/* ==================================
           PROVIDER CARDS
-          ====================================== */}
+          ================================== */}
 
       <div className="provider-card-grid">
 
@@ -308,38 +363,35 @@ function ProvidersPage() {
               key={provider.id}
             >
 
-              {/* Placeholder avatar for now.
-                  Later we can add provider photos. */}
+              {/* Placeholder avatar using
+                  first business-name letter. */}
 
               <div className="provider-avatar">
+
                 {provider.business_name
                   ?.charAt(0)
                   .toUpperCase()}
+
               </div>
 
 
               <div className="provider-card-content">
 
-                <div className="provider-card-top">
+                <p className="verified-label">
+                  Verified Provider
+                </p>
 
-                  <div>
 
-                    <p className="verified-label">
-                      Verified Provider
-                    </p>
-
-                    <h2>
-                      {provider.business_name}
-                    </h2>
-
-                  </div>
-
-                </div>
+                <h2>
+                  {provider.business_name}
+                </h2>
 
 
                 <p className="provider-name">
+
                   {provider.first_name}{" "}
                   {provider.last_name}
+
                 </p>
 
 
@@ -355,9 +407,7 @@ function ProvidersPage() {
                 )}
 
 
-                {/* ==================================
-                    SERVICE TAGS
-                    ================================== */}
+                {/* Service name tags. */}
 
                 {provider.services?.length > 0 && (
                   <div className="service-tags">
@@ -377,9 +427,7 @@ function ProvidersPage() {
                 )}
 
 
-                {/* ==================================
-                    SERVICE PREVIEW
-                    ================================== */}
+                {/* Preview first three services. */}
 
                 {provider.services?.length > 0 && (
                   <div className="provider-service-preview">
@@ -391,6 +439,7 @@ function ProvidersPage() {
                           className="service-preview-row"
                           key={service.id}
                         >
+
                           <span>
                             {service.name}
                           </span>
@@ -398,6 +447,7 @@ function ProvidersPage() {
                           <strong>
                             ${service.price}
                           </strong>
+
                         </div>
                       ))}
 
@@ -405,9 +455,7 @@ function ProvidersPage() {
                 )}
 
 
-                {/* ==================================
-                    VIEW PROFILE BUTTON
-                    ================================== */}
+                {/* Open provider details page. */}
 
                 <Link
                   className="provider-card-button"
@@ -427,5 +475,6 @@ function ProvidersPage() {
     </div>
   );
 }
+
 
 export default ProvidersPage;

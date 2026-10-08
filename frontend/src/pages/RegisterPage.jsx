@@ -1,36 +1,65 @@
 // RegisterPage.jsx
-// Creates new client or provider accounts.
+//
+// Allows a new user to create either:
+//
+// - a client account
+// - a beauty professional/provider account
+//
+// Admin accounts cannot be created publicly.
+//
+// After registration:
+// - clients go to the provider list
+// - providers go to provider profile setup
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+
+import {
+  Link,
+  useNavigate,
+} from "react-router-dom";
+
+import api from "../api";
+
 
 function RegisterPage() {
   const navigate = useNavigate();
 
-  // ======================================
-  // FORM STATE
-  // ======================================
-
-  const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
-    username: "",
-    email: "",
-    password: "",
-    role: "client",
-  });
-
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
 
   // ======================================
-  // HANDLE INPUT CHANGES
+  // REGISTRATION FORM STATE
+  // ======================================
+
+  const [formData, setFormData] =
+    useState({
+      first_name: "",
+      last_name: "",
+      username: "",
+      email: "",
+      password: "",
+      role: "client",
+    });
+
+
+  // ======================================
+  // PAGE STATE
+  // ======================================
+
+  const [error, setError] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(false);
+
+
+  // ======================================
+  // HANDLE FORM INPUT
   // ======================================
 
   function handleChange(event) {
-    const { name, value } = event.target;
+    const {
+      name,
+      value,
+    } = event.target;
 
     setFormData((current) => ({
       ...current,
@@ -40,7 +69,7 @@ function RegisterPage() {
 
 
   // ======================================
-  // HANDLE REGISTRATION
+  // CREATE ACCOUNT
   // ======================================
 
   async function handleSubmit(event) {
@@ -50,14 +79,26 @@ function RegisterPage() {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        "http://localhost:3001/api/auth/register",
-        formData
+      const response =
+        await api.post(
+          "/api/auth/register",
+          formData
+        );
+
+
+      const {
+        token,
+        user,
+      } = response.data;
+
+
+      // Automatically log the user in
+      // after successful registration.
+      localStorage.setItem(
+        "token",
+        token
       );
 
-      const { token, user } = response.data;
-
-      localStorage.setItem("token", token);
       localStorage.setItem(
         "user",
         JSON.stringify(user)
@@ -65,9 +106,15 @@ function RegisterPage() {
 
 
       // Providers need to create their
-      // professional profile after registering.
-      if (user.role === "provider") {
-        navigate("/provider-profile-setup");
+      // professional profile before they
+      // can manage BeautyBar services.
+      if (
+        user.role === "provider"
+      ) {
+        navigate(
+          "/provider-profile-setup"
+        );
+
       } else {
         navigate("/providers");
       }
@@ -91,9 +138,9 @@ function RegisterPage() {
 
       <div className="auth-card">
 
-        {/* ======================================
+        {/* ==================================
             HEADER
-            ====================================== */}
+            ================================== */}
 
         <div className="auth-header">
 
@@ -106,13 +153,17 @@ function RegisterPage() {
           </h1>
 
           <p>
-            Register as a client to book beauty
-            services or as a professional to
-            manage your own BeautyBar profile.
+            Register as a client to book
+            beauty services or as a professional
+            to manage your BeautyBar profile.
           </p>
 
         </div>
 
+
+        {/* ==================================
+            ERROR MESSAGE
+            ================================== */}
 
         {error && (
           <div className="error-message">
@@ -121,9 +172,9 @@ function RegisterPage() {
         )}
 
 
-        {/* ======================================
+        {/* ==================================
             REGISTRATION FORM
-            ====================================== */}
+            ================================== */}
 
         <form
           className="auth-form"
@@ -133,6 +184,7 @@ function RegisterPage() {
           <div className="auth-name-grid">
 
             <div>
+
               <label htmlFor="first_name">
                 First Name
               </label>
@@ -141,14 +193,18 @@ function RegisterPage() {
                 id="first_name"
                 name="first_name"
                 type="text"
-                value={formData.first_name}
+                value={
+                  formData.first_name
+                }
                 onChange={handleChange}
                 required
               />
+
             </div>
 
 
             <div>
+
               <label htmlFor="last_name">
                 Last Name
               </label>
@@ -157,16 +213,20 @@ function RegisterPage() {
                 id="last_name"
                 name="last_name"
                 type="text"
-                value={formData.last_name}
+                value={
+                  formData.last_name
+                }
                 onChange={handleChange}
                 required
               />
+
             </div>
 
           </div>
 
 
           <div>
+
             <label htmlFor="username">
               Username
             </label>
@@ -175,14 +235,18 @@ function RegisterPage() {
               id="username"
               name="username"
               type="text"
-              value={formData.username}
+              value={
+                formData.username
+              }
               onChange={handleChange}
               required
             />
+
           </div>
 
 
           <div>
+
             <label htmlFor="email">
               Email
             </label>
@@ -191,14 +255,18 @@ function RegisterPage() {
               id="email"
               name="email"
               type="email"
-              value={formData.email}
+              value={
+                formData.email
+              }
               onChange={handleChange}
               required
             />
+
           </div>
 
 
           <div>
+
             <label htmlFor="password">
               Password
             </label>
@@ -207,15 +275,19 @@ function RegisterPage() {
               id="password"
               name="password"
               type="password"
-              value={formData.password}
+              value={
+                formData.password
+              }
               onChange={handleChange}
               minLength="6"
               required
             />
+
           </div>
 
 
           <div>
+
             <label htmlFor="role">
               Account Type
             </label>
@@ -227,6 +299,7 @@ function RegisterPage() {
               onChange={handleChange}
               required
             >
+
               <option value="client">
                 Client
               </option>
@@ -234,7 +307,9 @@ function RegisterPage() {
               <option value="provider">
                 Beauty Professional
               </option>
+
             </select>
+
           </div>
 
 
@@ -251,15 +326,18 @@ function RegisterPage() {
         </form>
 
 
-        {/* ======================================
+        {/* ==================================
             LOGIN LINK
-            ====================================== */}
+            ================================== */}
 
         <p className="auth-footer">
+
           Already have an account?{" "}
+
           <Link to="/login">
             Log in
           </Link>
+
         </p>
 
       </div>
@@ -267,5 +345,6 @@ function RegisterPage() {
     </div>
   );
 }
+
 
 export default RegisterPage;

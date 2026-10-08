@@ -1,53 +1,105 @@
 // ReviewsPage.jsx
-// Lets a logged-in client:
-// - see providers from completed appointments
-// - submit a review
-// - see their existing reviews if needed later
+//
+// Allows clients to submit reviews.
+//
+// BeautyBar rules:
+//
+// - only clients can submit reviews
+// - the client must have a completed
+//   appointment with the provider
+// - rating must be between 1 and 5
+// - backend prevents duplicate provider
+//   reviews from the same client
 
-import { useEffect, useState } from "react";
-import axios from "axios";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import api from "../api";
+
 
 function ReviewsPage() {
-  // Completed appointments that are eligible for review.
-  const [appointments, setAppointments] = useState([]);
+  // ======================================
+  // COMPLETED APPOINTMENTS
+  // ======================================
 
-  // Form state.
-  const [providerId, setProviderId] = useState("");
-  const [rating, setRating] = useState("5");
-  const [comment, setComment] = useState("");
-
-  // Feedback state.
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [
+    appointments,
+    setAppointments,
+  ] = useState([]);
 
 
   // ======================================
-  // LOAD CLIENT APPOINTMENTS
+  // REVIEW FORM STATE
+  // ======================================
+
+  const [
+    providerId,
+    setProviderId,
+  ] = useState("");
+
+  const [
+    rating,
+    setRating,
+  ] = useState("5");
+
+  const [
+    comment,
+    setComment,
+  ] = useState("");
+
+
+  // ======================================
+  // PAGE STATE
+  // ======================================
+
+  const [error, setError] =
+    useState("");
+
+  const [message, setMessage] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(true);
+
+
+  // ======================================
+  // LOAD COMPLETED APPOINTMENTS
   // ======================================
 
   useEffect(() => {
     async function fetchAppointments() {
       try {
-        const token = localStorage.getItem("token");
+        const token =
+          localStorage.getItem("token");
 
-        const response = await axios.get(
-          "http://localhost:3001/api/appointments/mine",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
 
-        // Only completed appointments can be reviewed.
-        const completedAppointments =
-          response.data.filter(
-            (appointment) =>
-              appointment.status === "completed"
+        const response =
+          await api.get(
+            "/api/appointments/mine",
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
           );
 
-        setAppointments(completedAppointments);
+
+        // Only completed appointments
+        // are eligible for reviews.
+        const completed =
+          response.data.filter(
+            (appointment) =>
+              appointment.status ===
+              "completed"
+          );
+
+
+        setAppointments(
+          completed
+        );
 
       } catch (err) {
         console.error(err);
@@ -62,7 +114,9 @@ function ReviewsPage() {
       }
     }
 
+
     fetchAppointments();
+
   }, []);
 
 
@@ -73,31 +127,41 @@ function ReviewsPage() {
   async function handleSubmit(event) {
     event.preventDefault();
 
-    setMessage("");
     setError("");
+    setMessage("");
+
 
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token");
 
-      await axios.post(
-        "http://localhost:3001/api/reviews",
+
+      await api.post(
+        "/api/reviews",
         {
-          provider_id: Number(providerId),
-          rating: Number(rating),
+          provider_id:
+            Number(providerId),
+
+          rating:
+            Number(rating),
+
           comment,
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization:
+              `Bearer ${token}`,
           },
         }
       );
 
+
       setMessage(
-        "Review submitted successfully!"
+        "Review submitted successfully."
       );
 
-      // Clear form after success.
+
+      // Reset review form.
       setProviderId("");
       setRating("5");
       setComment("");
@@ -113,71 +177,111 @@ function ReviewsPage() {
   }
 
 
+  // ======================================
+  // LOADING
+  // ======================================
+
   if (loading) {
-    return <p>Loading review options...</p>;
+    return (
+      <p>
+        Loading completed appointments...
+      </p>
+    );
   }
 
 
   return (
     <div>
-      <h1>Leave a Review</h1>
+
+      <h1>
+        Leave a Review
+      </h1>
+
+
+      {/* ==================================
+          MESSAGES
+          ================================== */}
 
       {message && (
-        <p>{message}</p>
+        <div className="success-message">
+          {message}
+        </div>
       )}
 
+
       {error && (
-        <p>{error}</p>
+        <div className="error-message">
+          {error}
+        </div>
       )}
+
+
+      {/* ==================================
+          REVIEW FORM
+          ================================== */}
 
       {appointments.length === 0 ? (
         <p>
-          You do not have any completed appointments
-          available to review yet.
+          You need a completed appointment
+          before you can review a provider.
         </p>
       ) : (
-        <form onSubmit={handleSubmit}>
+        <form
+          onSubmit={handleSubmit}
+        >
 
-          {/* ==================================
-              PROVIDER SELECTION
-              ================================== */}
+          {/* ----------------------------
+              PROVIDER
+              ---------------------------- */}
 
           <div>
-            <label htmlFor="provider">
+
+            <label htmlFor="review-provider">
               Provider
             </label>
 
             <select
-              id="provider"
+              id="review-provider"
               value={providerId}
               onChange={(event) =>
-                setProviderId(event.target.value)
+                setProviderId(
+                  event.target.value
+                )
               }
               required
             >
+
               <option value="">
                 Select provider
               </option>
 
-              {appointments.map((appointment) => (
-                <option
-                  key={appointment.id}
-                  value={appointment.provider_id}
-                >
-                  {appointment.business_name}
-                  {" - "}
-                  {appointment.service_name}
-                </option>
-              ))}
+
+              {appointments.map(
+                (appointment) => (
+                  <option
+                    key={
+                      appointment.id
+                    }
+                    value={
+                      appointment.provider_id
+                    }
+                  >
+                    {appointment.business_name}
+                  </option>
+                )
+              )}
+
             </select>
+
           </div>
 
 
-          {/* ==================================
+          {/* ----------------------------
               RATING
-              ================================== */}
+              ---------------------------- */}
 
           <div>
+
             <label htmlFor="rating">
               Rating
             </label>
@@ -186,23 +290,44 @@ function ReviewsPage() {
               id="rating"
               value={rating}
               onChange={(event) =>
-                setRating(event.target.value)
+                setRating(
+                  event.target.value
+                )
               }
+              required
             >
-              <option value="5">5 - Excellent</option>
-              <option value="4">4 - Very Good</option>
-              <option value="3">3 - Good</option>
-              <option value="2">2 - Fair</option>
-              <option value="1">1 - Poor</option>
+
+              <option value="5">
+                5 - Excellent
+              </option>
+
+              <option value="4">
+                4 - Very Good
+              </option>
+
+              <option value="3">
+                3 - Good
+              </option>
+
+              <option value="2">
+                2 - Fair
+              </option>
+
+              <option value="1">
+                1 - Poor
+              </option>
+
             </select>
+
           </div>
 
 
-          {/* ==================================
+          {/* ----------------------------
               COMMENT
-              ================================== */}
+              ---------------------------- */}
 
           <div>
+
             <label htmlFor="review-comment">
               Comment
             </label>
@@ -211,11 +336,13 @@ function ReviewsPage() {
               id="review-comment"
               value={comment}
               onChange={(event) =>
-                setComment(event.target.value)
+                setComment(
+                  event.target.value
+                )
               }
               rows="5"
-              placeholder="Tell others about your experience."
             />
+
           </div>
 
 
@@ -225,8 +352,10 @@ function ReviewsPage() {
 
         </form>
       )}
+
     </div>
   );
 }
+
 
 export default ReviewsPage;
